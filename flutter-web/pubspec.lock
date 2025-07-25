@@ -70,6 +70,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_json_viewer:
+    dependency: "direct main"
+    description:
+      name: flutter_json_viewer
+      sha256: "3acc20693c3e6465ff2e2a7884269e362cb8acc2b11e7caa9b283872f854e7bf"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
