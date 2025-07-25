@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP调试代理服务 - 简化界面</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.connected { background: #d4edda; color: #155724; }
+        .status.disconnected { background: #f8d7da; color: #721c24; }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logs-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .logs-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        
+        .log-item {
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .log-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .log-item.selected {
+            background-color: #e3f2fd;
+        }
+        
+        .log-summary {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .method {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .method.get { background: #28a745; }
+        .method.post { background: #007bff; }
+        .method.put { background: #ffc107; color: #212529; }
+        .method.delete { background: #dc3545; }
+        
+        .status-code {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-code.success { background: #28a745; }
+        .status-code.error { background: #dc3545; }
+        .status-code.client-error { background: #fd7e14; }
+        .status-code.server-error { background: #6f42c1; }
+        
+        .log-url {
+            flex: 1;
+            font-family: monospace;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .log-time {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .log-duration {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .detail-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .detail-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .detail-content {
+            padding: 20px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h3 {
+            margin-top: 0;
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .json-content {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .json-item {
+            margin: 2px 0;
+        }
+        
+        .json-key {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .json-string {
+            color: #008800;
+        }
+        
+        .json-number {
+            color: #cc6600;
+        }
+        
+        .json-boolean {
+            color: #cc0066;
+        }
+        
+        .json-null {
+            color: #999999;
+        }
+        
+        .json-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            line-height: 16px;
+            margin-right: 4px;
+            border-radius: 2px;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .json-toggle:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .json-collapsed {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .json-indent {
+            margin-left: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .btn-primary { background: #007bff; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        
+        .btn:hover { opacity: 0.8; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 HTTP调试代理服务</h1>
+            <div>
+                <span>状态: </span>
+                <span id="connection-status" class="status disconnected">未连接</span>
+                <span id="log-count">(0 条记录)</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadLogs()">刷新日志</button>
+            <button class="btn btn-danger" onclick="clearLogs()">清除日志</button>
+            <button class="btn btn-secondary" onclick="toggleWebSocket()">切换WebSocket</button>
+        </div>
+        
+        <div class="logs-container">
+            <div class="logs-header">
+                HTTP请求日志
+            </div>
+            <div id="logs-list">
+                <div class="empty-state">
+                    <div>📋</div>
+                    <h3>暂无HTTP请求记录</h3>
+                    <p>等待Android应用发送请求...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="detail-panel" class="detail-panel">
+            <div class="detail-header">
+                <h3>请求详情</h3>
+                <button class="btn btn-secondary" onclick="copyToClipboard()">复制详情</button>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <!-- 详情内容将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        let selectedLog = null;
+        let ws = null;
+        let wsEnabled = true;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLogs();
+            connectWebSocket();
+        });
+
+        // 加载日志
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                logs = await response.json();
+                updateLogsDisplay();
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('加载日志失败:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // 清除日志
+        async function clearLogs() {
+            if (!confirm('确定要清除所有日志吗？')) return;
+            
+            try {
+                await fetch('/api/logs/clear', { method: 'POST' });
+                logs = [];
+                updateLogsDisplay();
+                hideDetailPanel();
+            } catch (error) {
+                console.error('清除日志失败:', error);
+            }
+        }
+
+        // 更新日志显示
+        function updateLogsDisplay() {
+            const container = document.getElementById('logs-list');
+            const countElement = document.getElementById('log-count');
+            
+            countElement.textContent = `(${logs.length} 条记录)`;
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>📋</div>
+                        <h3>暂无HTTP请求记录</h3>
+                        <p>等待Android应用发送请求...</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = logs.reverse().map((log, index) => `
+                <div class="log-item ${selectedLog && selectedLog.id === log.id ? 'selected' : ''}" 
+                     onclick="selectLog('${log.id}')">
+                    <div class="log-summary">
+                        <span class="method ${log.method.toLowerCase()}">${log.method}</span>
+                        <span class="status-code ${getStatusClass(log.status_code)}">${log.status_code}</span>
+                        <div class="log-url">${log.url}</div>
+                        <div class="log-time">${formatTime(log.timestamp)}</div>
+                        <div class="log-duration">${log.duration}ms</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 选择日志
+        function selectLog(logId) {
+            selectedLog = logs.find(log => log.id === logId);
+            updateLogsDisplay();
+            showDetailPanel();
+        }
+
+        // 显示详情面板
+        function showDetailPanel() {
+            if (!selectedLog) return;
+            
+            const panel = document.getElementById('detail-panel');
+            const content = document.getElementById('detail-content');
+            
+            content.innerHTML = `
+                <div class="detail-section">
+                    <h3>基本信息</h3>
+                    <p><strong>方法:</strong> ${selectedLog.method}</p>
+                    <p><strong>URL:</strong> ${selectedLog.url}</p>
+                    <p><strong>状态码:</strong> ${selectedLog.status_code}</p>
+                    <p><strong>耗时:</strong> ${selectedLog.duration}ms</p>
+                    <p><strong>时间:</strong> ${formatTime(selectedLog.timestamp)}</p>
+                    <p><strong>ID:</strong> ${selectedLog.id}</p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>请求头</h3>
+                    <div class="json-content">${formatHeaders(selectedLog.request_headers)}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>请求体</h3>
+                    <div class="json-content">${formatJson(selectedLog.request_body)}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>响应头</h3>
+                    <div class="json-content">${formatHeaders(selectedLog.response_headers)}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>响应体</h3>
+                    <div class="json-content">${formatJson(selectedLog.response_body)}</div>
+                </div>
+            `;
+            
+            panel.style.display = 'block';
+        }
+
+        // 隐藏详情面板
+        function hideDetailPanel() {
+            document.getElementById('detail-panel').style.display = 'none';
+            selectedLog = null;
+        }
+
+        // 格式化JSON（支持折叠/展开）
+        function formatJson(content) {
+            if (!content || content.trim() === '') return '(无)';
+            
+            try {
+                if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
+                    const parsed = JSON.parse(content);
+                    return formatJsonWithToggle(parsed, 0);
+                }
+            } catch (e) {
+                // 不是有效的JSON，保持原样
+            }
+            
+            return content;
+        }
+
+        // 递归格式化JSON，支持折叠/展开
+        function formatJsonWithToggle(obj, level) {
+            const indent = '  '.repeat(level);
+            const nextIndent = '  '.repeat(level + 1);
+            
+            if (obj === null) {
+                return `<span class="json-null">null</span>`;
+            }
+            
+            if (typeof obj === 'boolean') {
+                return `<span class="json-boolean">${obj}</span>`;
+            }
+            
+            if (typeof obj === 'number') {
+                return `<span class="json-number">${obj}</span>`;
+            }
+            
+            if (typeof obj === 'string') {
+                return `<span class="json-string">"${obj}"</span>`;
+            }
+            
+            if (Array.isArray(obj)) {
+                if (obj.length === 0) {
+                    return '[]';
+                }
+                
+                const itemId = 'json_' + Math.random().toString(36).substr(2, 9);
+                const items = obj.map((item, index) => 
+                    `<div class="json-item json-indent">${formatJsonWithToggle(item, level + 1)}</div>`
+                ).join('');
+                
+                return `
+                    <div class="json-item">
+                        <span class="json-toggle" onclick="toggleJson('${itemId}')" id="toggle_${itemId}">▼</span>
+                        <span class="json-key">[</span>
+                        <span class="json-collapsed" id="collapsed_${itemId}">${obj.length} 项</span>
+                        <div id="expanded_${itemId}">
+                            ${items}
+                        </div>
+                        <span class="json-key">]</span>
+                    </div>
+                `;
+            }
+            
+            if (typeof obj === 'object') {
+                const keys = Object.keys(obj);
+                if (keys.length === 0) {
+                    return '{}';
+                }
+                
+                const itemId = 'json_' + Math.random().toString(36).substr(2, 9);
+                const items = keys.map(key => 
+                    `<div class="json-item json-indent">
+                        <span class="json-key">"${key}":</span> ${formatJsonWithToggle(obj[key], level + 1)}
+                    </div>`
+                ).join('');
+                
+                return `
+                    <div class="json-item">
+                        <span class="json-toggle" onclick="toggleJson('${itemId}')" id="toggle_${itemId}">▼</span>
+                        <span class="json-key">{</span>
+                        <span class="json-collapsed" id="collapsed_${itemId}">${keys.length} 个属性</span>
+                        <div id="expanded_${itemId}">
+                            ${items}
+                        </div>
+                        <span class="json-key">}</span>
+                    </div>
+                `;
+            }
+            
+            return String(obj);
+        }
+
+        // 切换JSON折叠/展开状态
+        function toggleJson(itemId) {
+            const toggle = document.getElementById('toggle_' + itemId);
+            const collapsed = document.getElementById('collapsed_' + itemId);
+            const expanded = document.getElementById('expanded_' + itemId);
+            
+            if (expanded.style.display === 'none') {
+                // 展开
+                expanded.style.display = 'block';
+                collapsed.style.display = 'none';
+                toggle.textContent = '▼';
+                toggle.style.background = '#007bff';
+                toggle.style.color = 'white';
+            } else {
+                // 折叠
+                expanded.style.display = 'none';
+                collapsed.style.display = 'inline';
+                toggle.textContent = '▶';
+                toggle.style.background = '#e9ecef';
+                toggle.style.color = '#495057';
+            }
+        }
+
+        // 格式化请求头
+        function formatHeaders(headers) {
+            if (!headers || Object.keys(headers).length === 0) return '(无)';
+            
+            return Object.entries(headers)
+                .map(([key, values]) => `${key}: ${Array.isArray(values) ? values.join(', ') : values}`)
+                .join('\n');
+        }
+
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 获取状态码样式类
+        function getStatusClass(statusCode) {
+            if (statusCode >= 200 && statusCode < 300) return 'success';
+            if (statusCode >= 400 && statusCode < 500) return 'client-error';
+            if (statusCode >= 500) return 'server-error';
+            return 'error';
+        }
+
+        // 更新连接状态
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            statusElement.textContent = connected ? '已连接' : '未连接';
+            statusElement.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+
+        // WebSocket连接
+        function connectWebSocket() {
+            if (!wsEnabled) return;
+            
+            try {
+                ws = new WebSocket('ws://localhost:8091/api/ws');
+                
+                ws.onopen = function() {
+                    console.log('WebSocket连接成功');
+                    updateConnectionStatus(true);
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const message = JSON.parse(event.data);
+                        if (message.type === 'new_log') {
+                            logs.push(message.data);
+                            updateLogsDisplay();
+                        }
+                    } catch (e) {
+                        console.error('解析WebSocket消息失败:', e);
+                    }
+                };
+                
+                ws.onclose = function() {
+                    console.log('WebSocket连接关闭');
+                    updateConnectionStatus(false);
+                    // 5秒后重连
+                    setTimeout(connectWebSocket, 5000);
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket错误:', error);
+                    updateConnectionStatus(false);
+                };
+            } catch (e) {
+                console.error('WebSocket连接失败:', e);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // 切换WebSocket
+        function toggleWebSocket() {
+            wsEnabled = !wsEnabled;
+            if (wsEnabled) {
+                connectWebSocket();
+            } else if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard() {
+            if (!selectedLog) return;
+            
+            const text = `
+HTTP请求详情
+============
+方法: ${selectedLog.method}
+URL: ${selectedLog.url}
+状态码: ${selectedLog.status_code}
+耗时: ${selectedLog.duration}ms
+时间: ${formatTime(selectedLog.timestamp)}
+ID: ${selectedLog.id}
+
+请求头:
+${formatHeaders(selectedLog.request_headers)}
+
+请求体:
+${formatJson(selectedLog.request_body)}
+
+响应头:
+${formatHeaders(selectedLog.response_headers)}
+
+响应体:
+${formatJson(selectedLog.response_body)}
+            `.trim();
+            
+            navigator.clipboard.writeText(text).then(function() {
+                alert('详情已复制到剪贴板');
+            }).catch(function() {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('详情已复制到剪贴板');
+            });
+        }
+    </script>
+</body>
+</html> 
