@@ -38,7 +38,7 @@ dependencies:
   # UI and utilities
   cupertino_icons: ^1.0.8
   intl: ^0.18.1
-  flutter_json_viewer: ^1.0.1
+  json_editor_flutter: ^1.4.2
 
 dev_dependencies:
   flutter_test:

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'package:flutter_json_viewer/flutter_json_viewer.dart';
+import 'package:json_editor_flutter/json_editor_flutter.dart';
 import '../models/http_log.dart';
 
 class LogDetail extends StatelessWidget {
@@ -389,17 +389,14 @@ class LogDetail extends StatelessWidget {
             ),
             Container(
               constraints: BoxConstraints(
-                minHeight: 200,
-                maxHeight: 600,
+                minHeight: 300,
+                maxHeight: 800,
               ),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(12),
-                child: JsonViewer(jsonData),
-              ),
+              child: _buildInteractiveJsonViewer(jsonData),
             ),
           ] else ...[
             SelectableText(
@@ -412,6 +409,27 @@ class LogDetail extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildInteractiveJsonViewer(dynamic data) {
+    return Container(
+      height: 700, // 固定高度确保完整显示
+      child: JsonEditor(
+        json: JsonEncoder.withIndent('  ').convert(data),
+        onChanged: (value) {
+          // 只读模式，不需要处理变化
+        },
+        enableMoreOptions: false, // 禁用添加/删除选项
+        enableKeyEdit: true, // 禁用键编辑
+        enableValueEdit: true, // 禁用值编辑
+        themeColor: Colors.blue.shade600, // 主题色
+        editors: [Editors.tree], // 只使用树形编辑器
+        enableHorizontalScroll: true, // 启用水平滚动
+        searchDuration: Duration(milliseconds: 300), // 搜索防抖时间
+        hideEditorsMenuButton: true, // 隐藏编辑器切换按钮
+        expandedObjects: [], // 默认不展开任何对象
       ),
     );
   }
@@ -472,4 +490,6 @@ class LogDetail extends StatelessWidget {
       ),
     );
   }
-} 
+}
+
+ 

@@ -70,14 +70,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_json_viewer:
-    dependency: "direct main"
-    description:
-      name: flutter_json_viewer
-      sha256: "3acc20693c3e6465ff2e2a7884269e362cb8acc2b11e7caa9b283872f854e7bf"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -115,6 +107,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.18.1"
+  json_editor_flutter:
+    dependency: "direct main"
+    description:
+      name: json_editor_flutter
+      sha256: "851a6adbfb6ee794809a941d82dde0c9f8b6c2fcadabcbde386f1cb6bf27466a"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.2"
   leak_tracker:
     dependency: transitive
     description:

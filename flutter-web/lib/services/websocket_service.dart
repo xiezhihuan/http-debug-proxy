@@ -17,6 +17,8 @@ class WebSocketService {
       _serverUrl = serverUrl;
     }
 
+    print('正在连接WebSocket: $_serverUrl');
+
     try {
       _channel = WebSocketChannel.connect(Uri.parse(_serverUrl));
       _isConnected = true;
@@ -25,16 +27,21 @@ class WebSocketService {
 
       _channel!.stream.listen(
         (data) {
+          print('收到WebSocket消息: $data');
           try {
             final jsonData = json.decode(data);
+            print('解析JSON成功: $jsonData');
             final message = WebSocketMessage.fromJson(jsonData);
+            print('消息类型: ${message.type}');
             
             if (message.type == 'new_log') {
               final httpLog = HttpLog.fromJson(message.data);
+              print('添加新日志: ${httpLog.id} - ${httpLog.method} ${httpLog.url}');
               _logController.add(httpLog);
             }
           } catch (e) {
             print('解析WebSocket消息失败: $e');
+            print('原始数据: $data');
           }
         },
         onError: (error) {
