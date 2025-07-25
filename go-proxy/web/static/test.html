@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP调试代理服务 - 测试页面</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 50px; 
+            background-color: #f5f5f5; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .status { 
+            background: #e7f3ff; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 20px 0; 
+        }
+        .error { 
+            background: #ffe7e7; 
+            color: #d63031; 
+        }
+        .success { 
+            background: #e7ffe7; 
+            color: #00b894; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 HTTP调试代理服务</h1>
+        <p>如果您能看到这个页面，说明Web服务器正常工作！</p>
+        
+        <div class="status success">
+            ✅ Web服务器状态：正常
+        </div>
+        
+        <h3>🔧 故障排除</h3>
+        <p>如果Flutter应用没有正常显示，请尝试：</p>
+        <ol>
+            <li>刷新页面 (Ctrl+F5 或 Cmd+R)</li>
+            <li>清除浏览器缓存</li>
+            <li>检查浏览器控制台是否有错误信息 (按F12)</li>
+            <li>访问 <a href="/">主页</a> 查看Flutter应用</li>
+        </ol>
+        
+        <h3>📋 服务信息</h3>
+        <ul>
+            <li>代理端口: 8080</li>
+            <li>Web端口: 8091</li>
+            <li>目标API: http://localhost:8081</li>
+        </ul>
+        
+        <h3>🔗 快速链接</h3>
+        <p>
+            <a href="/" style="display: inline-block; background: #0984e3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">返回主界面</a>
+            <a href="/api/logs" style="display: inline-block; background: #74b9ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">查看API日志</a>
+        </p>
+    </div>
+</body>
+</html> 
