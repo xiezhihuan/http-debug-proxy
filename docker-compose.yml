@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  http-debug-proxy:
+    build: .
+    container_name: http-debug-proxy
+    ports:
+      - "8090:8090"  # 代理端口
+      - "8091:8091"  # Web界面端口
+    environment:
+      - TARGET_URL=http://host.docker.internal:8081  # 目标API服务器
+      - PROXY_PORT=8090
+      - WEB_PORT=8091
+      - MAX_LOGS=1000
+    volumes:
+      - ./logs:/app/logs  # 日志持久化
+      - ./config.json:/app/config.json:ro  # 配置文件（可选）
+    restart: unless-stopped
+    networks:
+      - debug-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8091/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 示例API服务器（可选）
+  example-api:
+    image: nginx:alpine
+    container_name: example-api
+    ports:
+      - "8081:80"
+    volumes:
+      - ./examples/api:/usr/share/nginx/html
+    networks:
+      - debug-network
+    profiles:
+      - example
+
+networks:
+  debug-network:
+    driver: bridge 
