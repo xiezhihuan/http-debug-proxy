@@ -442,7 +442,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
 
   Widget _buildJsonNode(dynamic data, int level) {
     if (data == null) {
-      return Text(
+      return SelectableText(
         'null',
         style: TextStyle(
           color: Colors.grey.shade600,
@@ -452,7 +452,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
     }
 
     if (data is bool) {
-      return Text(
+      return SelectableText(
         data.toString(),
         style: TextStyle(
           color: Colors.purple,
@@ -462,7 +462,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
     }
 
     if (data is num) {
-      return Text(
+      return SelectableText(
         data.toString(),
         style: TextStyle(
           color: Colors.orange.shade700,
@@ -472,11 +472,35 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
     }
 
     if (data is String) {
-      return Text(
-        '"$data"',
-        style: TextStyle(
-          color: Colors.green.shade700,
-        ),
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SelectableText(
+              '"$data"',
+              style: TextStyle(
+                color: Colors.green.shade700,
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: data));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('已复制: $data'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Icon(
+              Icons.copy,
+              size: 14,
+              color: Colors.blue.shade600,
+            ),
+          ),
+        ],
       );
     }
 
@@ -487,7 +511,27 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
 
       return _JsonCollapsibleWidget(
         title: 'Array (${data.length} items)',
-        children: data.map((item) => _buildJsonNode(item, level + 1)).toList(),
+        children: data.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          return Padding(
+            padding: EdgeInsets.only(left: 16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SelectableText(
+                  '[$index]: ',
+                  style: TextStyle(
+                    color: Colors.purple.shade700,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+                Expanded(child: _buildJsonNode(item, level + 1)),
+              ],
+            ),
+          );
+        }).toList(),
         level: level,
       );
     }
@@ -503,11 +547,33 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '"${entry.key}": ',
-                style: TextStyle(
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Row(
+                  children: [
+                    SelectableText(
+                      '"${entry.key}": ',
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: entry.key));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('已复制键名: ${entry.key}'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.copy,
+                        size: 12,
+                        color: Colors.blue.shade600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(child: _buildJsonNode(entry.value, level + 1)),
