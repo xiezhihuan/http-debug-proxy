@@ -447,6 +447,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
         style: TextStyle(
           color: Colors.grey.shade600,
           fontStyle: FontStyle.italic,
+          fontSize: 13,
         ),
       );
     }
@@ -457,6 +458,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
         style: TextStyle(
           color: Colors.purple,
           fontWeight: FontWeight.bold,
+          fontSize: 13,
         ),
       );
     }
@@ -467,19 +469,28 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
         style: TextStyle(
           color: Colors.orange.shade700,
           fontWeight: FontWeight.bold,
+          fontSize: 13,
         ),
       );
     }
 
     if (data is String) {
+      // 处理长字符串的换行显示
+      String displayText = data;
+      if (data.length > 100) {
+        displayText = data.substring(0, 100) + '...';
+      }
+      
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: SelectableText(
-              '"$data"',
+              '"$displayText"',
               style: TextStyle(
                 color: Colors.green.shade700,
+                fontSize: 13,
+                height: 1.4,
               ),
             ),
           ),
@@ -489,7 +500,7 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
               Clipboard.setData(ClipboardData(text: data));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('已复制: $data'),
+                  content: Text('已复制: ${data.length > 50 ? data.substring(0, 50) + '...' : data}'),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -506,7 +517,28 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
 
     if (data is List) {
       if (data.isEmpty) {
-        return Text('[]');
+        return Row(
+          children: [
+            SelectableText('[]'),
+            SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: '[]'));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('已复制空数组'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: Icon(
+                Icons.copy,
+                size: 14,
+                color: Colors.blue.shade600,
+              ),
+            ),
+          ],
+        );
       }
 
       return _JsonCollapsibleWidget(
@@ -514,69 +546,171 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
         children: data.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(left: 16.0),
+          return Container(
+            margin: EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              border: Border.all(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(4),
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SelectableText(
-                  '[$index]: ',
-                  style: TextStyle(
-                    color: Colors.purple.shade700,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: SelectableText(
+                    '[$index]',
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
+                SizedBox(width: 12),
                 Expanded(child: _buildJsonNode(item, level + 1)),
+                SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    final jsonString = JsonEncoder.withIndent('  ').convert(item);
+                    Clipboard.setData(ClipboardData(text: jsonString));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('已复制数组项 [$index]'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.copy,
+                    size: 12,
+                    color: Colors.purple.shade600,
+                  ),
+                ),
               ],
             ),
           );
         }).toList(),
         level: level,
+        onCopy: () {
+          final jsonString = JsonEncoder.withIndent('  ').convert(data);
+          Clipboard.setData(ClipboardData(text: jsonString));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('已复制整个数组'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
       );
     }
 
     if (data is Map) {
       if (data.isEmpty) {
-        return Text('{}');
+        return Row(
+          children: [
+            SelectableText('{}'),
+            SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: '{}'));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('已复制空对象'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: Icon(
+                Icons.copy,
+                size: 14,
+                color: Colors.blue.shade600,
+              ),
+            ),
+          ],
+        );
       }
 
       final children = data.entries.map((entry) {
-        return Padding(
-          padding: EdgeInsets.only(left: 16.0),
-          child: Row(
+        return Container(
+          margin: EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    SelectableText(
-                      '"${entry.key}": ',
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontWeight: FontWeight.bold,
-                      ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: entry.key));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('已复制键名: ${entry.key}'),
-                            duration: Duration(seconds: 2),
+                    child: Row(
+                      children: [
+                        SelectableText(
+                          entry.key,
+                          style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.copy,
-                        size: 12,
-                        color: Colors.blue.shade600,
-                      ),
+                        ),
+                        SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: entry.key));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('已复制键名: ${entry.key}'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            Icons.copy,
+                            size: 12,
+                            color: Colors.blue.shade600,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      final jsonString = JsonEncoder.withIndent('  ').convert(entry.value);
+                      Clipboard.setData(ClipboardData(text: jsonString));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('已复制键值对: ${entry.key}'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      Icons.copy,
+                      size: 14,
+                      color: Colors.orange.shade600,
+                    ),
+                  ),
+                ],
               ),
-              Expanded(child: _buildJsonNode(entry.value, level + 1)),
+              SizedBox(height: 8),
+              Padding(
+                padding: EdgeInsets.only(left: 16),
+                child: _buildJsonNode(entry.value, level + 1),
+              ),
             ],
           ),
         );
@@ -586,6 +720,16 @@ class _JsonViewerWidgetState extends State<_JsonViewerWidget> {
         title: 'Object (${data.length} properties)',
         children: children,
         level: level,
+        onCopy: () {
+          final jsonString = JsonEncoder.withIndent('  ').convert(data);
+          Clipboard.setData(ClipboardData(text: jsonString));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('已复制整个对象'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
       );
     }
 
@@ -598,11 +742,13 @@ class _JsonCollapsibleWidget extends StatefulWidget {
   final String title;
   final List<Widget> children;
   final int level;
+  final VoidCallback? onCopy;
 
   const _JsonCollapsibleWidget({
     required this.title,
     required this.children,
     required this.level,
+    this.onCopy,
   });
 
   @override
@@ -617,28 +763,58 @@ class _JsonCollapsibleWidgetState extends State<_JsonCollapsibleWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded;
-            });
-          },
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            border: Border.all(color: Colors.blue.shade200),
+            borderRadius: BorderRadius.circular(4),
+          ),
           child: Row(
             children: [
-              Icon(
-                _isExpanded ? Icons.expand_more : Icons.chevron_right,
-                size: 16,
-                color: Colors.blue.shade600,
-              ),
-              SizedBox(width: 4),
-              Text(
-                widget.title,
-                style: TextStyle(
-                  color: Colors.blue.shade600,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      _isExpanded ? Icons.expand_more : Icons.chevron_right,
+                      size: 18,
+                      color: Colors.blue.shade700,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (widget.onCopy != null) ...[
+                Spacer(),
+                GestureDetector(
+                  onTap: widget.onCopy,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Icon(
+                      Icons.copy,
+                      size: 14,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
