@@ -160,7 +160,7 @@ class LogDetail extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 8),
-              _buildCodeBlock(log!.requestBody, context),
+              _buildCodeBlock(log!.requestBody, context, isRequest: true),
             ] else ...[
               Text(
                 '无请求体',
@@ -302,7 +302,7 @@ class LogDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildCodeBlock(String content, BuildContext context) {
+  Widget _buildCodeBlock(String content, BuildContext context, {bool isRequest = false}) {
     // 尝试格式化JSON
     bool isJson = false;
     dynamic jsonData;
@@ -320,9 +320,9 @@ class LogDetail extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isJson ? Colors.blue.shade50 : Colors.grey.shade50,
+        color: isJson ? (isRequest ? Colors.green.shade50 : Colors.blue.shade50) : Colors.grey.shade50,
         border: Border.all(
-          color: isJson ? Colors.blue.shade300 : Colors.grey.shade300,
+          color: isJson ? (isRequest ? Colors.green.shade300 : Colors.blue.shade300) : Colors.grey.shade300,
         ),
         borderRadius: BorderRadius.circular(4),
       ),
@@ -337,7 +337,7 @@ class LogDetail extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
+                      color: isRequest ? Colors.green.shade100 : Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -345,7 +345,7 @@ class LogDetail extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
+                        color: isRequest ? Colors.green.shade700 : Colors.blue.shade700,
                       ),
                     ),
                   ),
@@ -388,15 +388,16 @@ class LogDetail extends StatelessWidget {
               ),
             ),
             Container(
-              constraints: BoxConstraints(
+              constraints: isRequest ? null : BoxConstraints(
                 minHeight: 300,
                 maxHeight: 800,
               ),
+              height: isRequest ? 200 : null, // 请求体固定高度200px
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: _buildInteractiveJsonViewer(jsonData),
+              child: isRequest ? _buildRequestJsonViewer(jsonData) : _buildInteractiveJsonViewer(jsonData),
             ),
           ] else ...[
             SelectableText(
@@ -415,16 +416,40 @@ class LogDetail extends StatelessWidget {
 
   Widget _buildInteractiveJsonViewer(dynamic data) {
     return Container(
-      height: 700, // 固定高度确保完整显示
+      constraints: BoxConstraints(
+        minHeight: 200, // 最小高度
+        maxHeight: 200, // 最大高度，超出时显示滚动条
+      ),
       child: JsonEditor(
         json: JsonEncoder.withIndent('  ').convert(data),
         onChanged: (value) {
           // 只读模式，不需要处理变化
         },
         enableMoreOptions: false, // 禁用添加/删除选项
-        enableKeyEdit: true, // 禁用键编辑
-        enableValueEdit: true, // 禁用值编辑
+        enableKeyEdit: true, // 启用键编辑
+        enableValueEdit: true, // 启用值编辑
         themeColor: Colors.blue.shade600, // 主题色
+        editors: [Editors.tree], // 只使用树形编辑器
+        enableHorizontalScroll: true, // 启用水平滚动
+        searchDuration: Duration(milliseconds: 300), // 搜索防抖时间
+        hideEditorsMenuButton: true, // 隐藏编辑器切换按钮
+        expandedObjects: [], // 默认不展开任何对象
+      ),
+    );
+  }
+
+  Widget _buildRequestJsonViewer(dynamic data) {
+    return Container(
+      height: 200, // 请求体固定高度200px
+      child: JsonEditor(
+        json: JsonEncoder.withIndent('  ').convert(data),
+        onChanged: (value) {
+          // 只读模式，不需要处理变化
+        },
+        enableMoreOptions: false, // 禁用添加/删除选项
+        enableKeyEdit: true, // 启用键编辑
+        enableValueEdit: true, // 启用值编辑
+        themeColor: Colors.green.shade600, // 绿色主题色（请求体）
         editors: [Editors.tree], // 只使用树形编辑器
         enableHorizontalScroll: true, // 启用水平滚动
         searchDuration: Duration(milliseconds: 300), // 搜索防抖时间
