@@ -76,16 +76,58 @@ cd go-proxy
 
 ### 使用Docker部署
 
+#### 快速启动（推荐）
+
+使用预构建的Docker镜像：
+
+```bash
+# 基本启动
+docker run -d \
+  --name http-debug-proxy \
+  -p 8080:8080 \
+  -p 8091:8091 \
+  -e TARGET_URL="http://192.168.100.220:8081" \
+  -e PROXY_PORT=8080 \
+  -e WEB_PORT=8091 \
+  -e MAX_LOGS=1000 \
+  -v $(pwd)/logs:/app/logs \
+  --restart unless-stopped \
+  602666178/http-proxy-debug-view
+```
+
+#### 参数说明
+
+| 参数 | 说明 | 示例值 |
+|------|------|--------|
+| `--name` | 容器名称 | `http-debug-proxy` |
+| `-p 8080:8080` | 代理端口映射 | 外部8080映射到容器8080 |
+| `-p 8091:8091` | Web界面端口映射 | 外部8091映射到容器8091 |
+| `-e TARGET_URL` | 目标API服务器地址 | `http://192.168.100.220:8081` |
+| `-e PROXY_PORT` | 代理端口 | `8080` |
+| `-e WEB_PORT` | Web界面端口 | `8091` |
+| `-e MAX_LOGS` | 最大日志数量 | `1000` |
+| `-v $(pwd)/logs:/app/logs` | 日志目录挂载 | 持久化日志数据 |
+| `--restart unless-stopped` | 重启策略 | 容器异常退出时自动重启 |
+
+#### 自定义构建
+
+如果需要自定义构建：
+
 ```bash
 # 构建Docker镜像
 docker build -t http-debug-proxy .
 
-# 运行容器
+# 运行自定义镜像
 docker run -d \
   --name http-debug-proxy \
-  -p 8090:8090 \
+  -p 8080:8080 \
   -p 8091:8091 \
-  -e TARGET_URL=http://your-api-server:8081 \
+  -e TARGET_URL="http://your-api-server:8081" \
+  -e PROXY_PORT=8080 \
+  -e WEB_PORT=8091 \
+  -e MAX_LOGS=1000 \
+  -v $(pwd)/logs:/app/logs \
+  --restart unless-stopped \
   http-debug-proxy
 ```
 
@@ -249,18 +291,38 @@ CMD ["./debug-proxy"]
 
 ### Docker Compose
 
+创建 `docker-compose.yml` 文件：
+
 ```yaml
 version: '3.8'
 services:
   http-debug-proxy:
-    build: .
+    image: 602666178/http-proxy-debug-view
+    container_name: http-debug-proxy
     ports:
-      - "8090:8090"
+      - "8080:8080"
       - "8091:8091"
     environment:
-      - TARGET_URL=http://your-api-server:8081
+      - TARGET_URL=http://192.168.100.220:8081
+      - PROXY_PORT=8080
+      - WEB_PORT=8091
+      - MAX_LOGS=1000
     volumes:
       - ./logs:/app/logs
+    restart: unless-stopped
+```
+
+启动服务：
+
+```bash
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
 ```
 
 ## 🔧 配置选项
