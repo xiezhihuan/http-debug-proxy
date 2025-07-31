@@ -266,7 +266,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
         children: [
           _buildSectionTitle('请求头'),
           SizedBox(height: 12),
-          widget.log!.requestHeaders.isNotEmpty 
+          widget.log!.requestHeaders.isNotEmpty
             ? _buildHeadersTable(widget.log!.requestHeaders)
             : _buildEmptyState('无请求头'),
           SizedBox(height: 24),
