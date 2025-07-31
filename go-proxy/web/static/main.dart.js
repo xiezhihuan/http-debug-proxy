@@ -78724,7 +78724,7 @@ m=A.cQ(A.aV("JSON Editor",h,h,h,A.bA(h,h,c?B.e2:B.e0,h,h,h,h,h,h,h,h,10,h,h,B.ag
 l=A.dv(4)
 l=A.cC(A.b([m,new A.p2(h),A.lu(h,A.cQ(A.cC(A.b([A.eD(B.je,B.e2,h,12),A.b0(h,h,4),A.aV("\u590d\u5236",h,h,h,A.bA(h,h,B.e2,h,h,h,h,h,h,h,h,10,h,h,B.ag,h,h,!0,h,h,h,h,h,h,h,h),h,h)],o),B.z,B.u,B.Z),B.r,h,h,new A.bE(B.iu,h,h,l,h,h,B.K),h,h,new A.a6(8,4,8,4),h),B.a9,!1,h,h,h,h,h,h,h,h,h,h,h,h,h,new A.a1O(g,b),h,h,h,h,h,h)],o),B.z,B.u,B.X)
 m=c?h:new A.a0(0,1/0,300,800)
-k=c?200:h
+k=c?400:h
 j=A.l9(B.bC,1)
 i=A.dv(4)
 g=g.a
@@ -78733,9 +78733,9 @@ B.b.K(n,A.b([new A.bN(new A.a6(12,12,12,12),l,h),A.cQ(g,B.r,h,m,new A.bE(h,h,j,i
 return A.cQ(A.dJ(n,B.aB,B.u,B.X),B.r,h,h,new A.bE(s,h,q,p,h,h,B.K),h,h,h,1/0)},
 a0X(a,b){return this.K7(a,b,!1)},
 a0Z(a){var s=null,r=A.OZ(a,s,"  ")
-return A.cQ(A.asS(A.b([B.fB],t.i4),!0,!0,!1,!0,[],!0,r,new A.a1Q(),A.d2(0,300,0),B.m0),B.r,s,new A.a0(0,1/0,200,200),s,s,s,s,s)},
+return A.cQ(A.asS(A.b([B.fB],t.i4),!0,!0,!1,!0,[],!0,r,new A.a1Q(),A.d2(0,300,0),B.m0),B.r,s,new A.a0(0,1/0,1200,1200),s,s,s,s,s)},
 a17(a){var s=null,r=A.OZ(a,s,"  ")
-return A.cQ(A.asS(A.b([B.fB],t.i4),!0,!0,!1,!0,[],!0,r,new A.a1R(),A.d2(0,300,0),B.mb),B.r,s,s,s,200,s,s,s)},
+return A.cQ(A.asS(A.b([B.fB],t.i4),!0,!0,!1,!0,[],!0,r,new A.a1R(),A.d2(0,300,0),B.mb),B.r,s,s,s,800,s,s,s)},
 LD(a){var s,r,q
 try{r=B.c.hs(a)
 if(B.c.bS(r,"{")||B.c.bS(r,"[")){s=B.b7.eB(a)

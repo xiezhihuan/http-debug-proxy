@@ -392,7 +392,7 @@ class LogDetail extends StatelessWidget {
                 minHeight: 300,
                 maxHeight: 800,
               ),
-              height: isRequest ? 200 : null, // 请求体固定高度200px
+              height: isRequest ? 400 : null, // 请求体固定高度200px
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(4),
@@ -417,8 +417,8 @@ class LogDetail extends StatelessWidget {
   Widget _buildInteractiveJsonViewer(dynamic data) {
     return Container(
       constraints: BoxConstraints(
-        minHeight: 200, // 最小高度
-        maxHeight: 200, // 最大高度，超出时显示滚动条
+        minHeight: 1200, // 最小高度
+        maxHeight: 1200, // 最大高度，超出时显示滚动条
       ),
       child: JsonEditor(
         json: JsonEncoder.withIndent('  ').convert(data),
@@ -440,7 +440,7 @@ class LogDetail extends StatelessWidget {
 
   Widget _buildRequestJsonViewer(dynamic data) {
     return Container(
-      height: 200, // 请求体固定高度200px
+      height: 800, // 请求体固定高度200px
       child: JsonEditor(
         json: JsonEncoder.withIndent('  ').convert(data),
         onChanged: (value) {
