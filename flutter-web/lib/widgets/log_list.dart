@@ -115,13 +115,17 @@ class LogTile extends StatelessWidget {
             _buildMethodChip(),
             SizedBox(width: 8),
             Expanded(
-              child: Text(
-                log.url,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 13,
+              child: Tooltip(
+                message: log.url,
+                waitDuration: Duration(milliseconds: 500),
+                child: Text(
+                  log.url,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
