@@ -5,11 +5,15 @@ import '../models/http_log.dart';
 class LogList extends StatelessWidget {
   final List<HttpLog> logs;
   final Function(HttpLog) onLogSelected;
+  final bool isListening;
+  final VoidCallback onToggleListening;
 
   const LogList({
     Key? key,
     required this.logs,
     required this.onLogSelected,
+    required this.isListening,
+    required this.onToggleListening,
   }) : super(key: key);
 
   @override
@@ -34,11 +38,53 @@ class LogList extends StatelessWidget {
               children: [
                 Icon(Icons.list, color: Colors.blue),
                 SizedBox(width: 8),
-                Text(
-                  'HTTP请求日志 (${logs.length})',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'HTTP请求日志 (${logs.length})',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                // 监听控制按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: isListening ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isListening ? Colors.green.shade300 : Colors.red.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: onToggleListening,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isListening ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                              size: 16,
+                              color: isListening ? Colors.green.shade700 : Colors.red.shade700,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              isListening ? '监听中' : '已停止',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isListening ? Colors.green.shade700 : Colors.red.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],

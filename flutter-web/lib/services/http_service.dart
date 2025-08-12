@@ -44,4 +44,38 @@ class HttpService {
       return false;
     }
   }
+
+  Future<bool> startListening() async {
+    try {
+      final response = await http.post(Uri.parse('$_baseUrl/api/listening/start'));
+      return response.statusCode == 200;
+    } catch (e) {
+      print('开始监听错误: $e');
+      return false;
+    }
+  }
+
+  Future<bool> stopListening() async {
+    try {
+      final response = await http.post(Uri.parse('$_baseUrl/api/listening/stop'));
+      return response.statusCode == 200;
+    } catch (e) {
+      print('停止监听错误: $e');
+      return false;
+    }
+  }
+
+  Future<bool> getListeningStatus() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/api/listening/status'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['listening'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      print('获取监听状态错误: $e');
+      return false;
+    }
+  }
 } 

@@ -18,20 +18,22 @@ import (
 
 // ProxyServer represents the HTTP proxy server
 type ProxyServer struct {
-	targetURL string
-	logs      []models.HTTPLog
-	mutex     sync.RWMutex
-	maxLogs   int
-	wsHub     *WebSocketHub
+	targetURL   string
+	logs        []models.HTTPLog
+	mutex       sync.RWMutex
+	maxLogs     int
+	wsHub       *WebSocketHub
+	isListening bool
 }
 
 // NewProxyServer creates a new proxy server instance
 func NewProxyServer(targetURL string, maxLogs int) *ProxyServer {
 	return &ProxyServer{
-		targetURL: targetURL,
-		logs:      make([]models.HTTPLog, 0),
-		maxLogs:   maxLogs,
-		wsHub:     NewWebSocketHub(),
+		targetURL:   targetURL,
+		logs:        make([]models.HTTPLog, 0),
+		maxLogs:     maxLogs,
+		wsHub:       NewWebSocketHub(),
+		isListening: true, // 默认开启监听
 	}
 }
 
@@ -49,6 +51,9 @@ func (p *ProxyServer) Start(proxyPort, webPort string) error {
 	// API handlers for web interface
 	mux.HandleFunc("/api/logs", p.handleGetLogs)
 	mux.HandleFunc("/api/logs/clear", p.handleClearLogs)
+	mux.HandleFunc("/api/listening/start", p.handleStartListening)
+	mux.HandleFunc("/api/listening/stop", p.handleStopListening)
+	mux.HandleFunc("/api/listening/status", p.handleListeningStatus)
 	mux.HandleFunc("/api/ws", p.wsHub.HandleWebSocket)
 
 	// Static file handler for Flutter web
@@ -161,6 +166,11 @@ func (p *ProxyServer) handleProxy(w http.ResponseWriter, r *http.Request) {
 
 // addLog adds a new log entry and notifies WebSocket clients
 func (p *ProxyServer) addLog(log models.HTTPLog) {
+	// 检查是否正在监听
+	if !p.isListening {
+		return
+	}
+
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -254,5 +264,56 @@ func (p *ProxyServer) corsMiddleware(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+// handleStartListening starts listening for new HTTP requests
+func (p *ProxyServer) handleStartListening(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	p.mutex.Lock()
+	p.isListening = true
+	p.mutex.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "success",
+		"message":   "开始监听HTTP请求",
+		"listening": true,
+	})
+}
+
+// handleStopListening stops listening for new HTTP requests
+func (p *ProxyServer) handleStopListening(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	p.mutex.Lock()
+	p.isListening = false
+	p.mutex.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "success",
+		"message":   "停止监听HTTP请求",
+		"listening": false,
+	})
+}
+
+// handleListeningStatus returns the current listening status
+func (p *ProxyServer) handleListeningStatus(w http.ResponseWriter, r *http.Request) {
+	p.mutex.RLock()
+	listening := p.isListening
+	p.mutex.RUnlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"listening": listening,
+		"message":   "正在监听",
 	})
 }

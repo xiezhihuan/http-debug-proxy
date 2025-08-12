@@ -43,6 +43,8 @@ class _MainScreenState extends State<MainScreen> {
   String? _filterMethod;
   int? _filterStatusCode;
   
+  bool _isListening = true; // 监听状态
+  
   StreamSubscription<HttpLog>? _logSubscription;
 
   @override
@@ -65,6 +67,9 @@ class _MainScreenState extends State<MainScreen> {
     
     // 加载历史日志
     _loadHistoryLogs();
+    
+    // 获取当前监听状态
+    _loadListeningStatus();
   }
 
   Future<void> _loadHistoryLogs() async {
@@ -76,6 +81,40 @@ class _MainScreenState extends State<MainScreen> {
       });
     } catch (e) {
       print('加载历史日志失败: $e');
+    }
+  }
+
+  Future<void> _loadListeningStatus() async {
+    try {
+      final listening = await _httpService.getListeningStatus();
+      setState(() {
+        _isListening = listening;
+      });
+    } catch (e) {
+      print('获取监听状态失败: $e');
+    }
+  }
+
+  Future<void> _toggleListening() async {
+    try {
+      bool success;
+      if (_isListening) {
+        success = await _httpService.stopListening();
+        if (success) {
+          setState(() {
+            _isListening = false;
+          });
+        }
+      } else {
+        success = await _httpService.startListening();
+        if (success) {
+          setState(() {
+            _isListening = true;
+          });
+        }
+      }
+    } catch (e) {
+      print('切换监听状态失败: $e');
     }
   }
 
@@ -201,6 +240,8 @@ class _MainScreenState extends State<MainScreen> {
                       child: LogList(
                         logs: _filteredLogs,
                         onLogSelected: _onLogSelected,
+                        isListening: _isListening,
+                        onToggleListening: _toggleListening,
                       ),
                     ),
                     SizedBox(width: 16),
