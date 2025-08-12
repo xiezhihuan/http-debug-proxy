@@ -7,6 +7,7 @@ class LogList extends StatelessWidget {
   final Function(HttpLog) onLogSelected;
   final bool isListening;
   final VoidCallback onToggleListening;
+  final VoidCallback onClearLogs; // 添加清除日志回调
   final HttpLog? selectedLog; // 添加选中日志参数
 
   const LogList({
@@ -15,6 +16,7 @@ class LogList extends StatelessWidget {
     required this.onLogSelected,
     required this.isListening,
     required this.onToggleListening,
+    required this.onClearLogs, // 添加清除日志回调
     required this.selectedLog, // 添加选中日志参数
   }) : super(key: key);
 
@@ -81,6 +83,47 @@ class LogList extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: isListening ? Colors.green.shade700 : Colors.red.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12), // 添加间距
+                // 清除日志按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.red.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: onClearLogs,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.delete_sweep,
+                              size: 16,
+                              color: Colors.red.shade700,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              '清除日志',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red.shade700,
                               ),
                             ),
                           ],

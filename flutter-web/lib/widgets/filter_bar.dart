@@ -75,8 +75,6 @@ class _FilterBarState extends State<FilterBar> {
               ),
               SizedBox(width: 16),
               _buildClearButton(),
-              SizedBox(width: 8),
-              _buildClearLogsButton(),
             ],
           ),
         ],
@@ -201,7 +199,7 @@ class _FilterBarState extends State<FilterBar> {
 
   Widget _buildClearLogsButton() {
     return ElevatedButton.icon(
-      onPressed: _handleClearLogs, // 使用新的处理方法
+      onPressed: widget.onClearLogs,
       icon: Icon(Icons.delete_sweep),
       label: Text('清除日志'),
       style: ElevatedButton.styleFrom(

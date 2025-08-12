@@ -242,7 +242,8 @@ class _MainScreenState extends State<MainScreen> {
                         onLogSelected: _onLogSelected,
                         isListening: _isListening,
                         onToggleListening: _toggleListening,
-                        selectedLog: _selectedLog, // 传递选中的日志
+                        onClearLogs: _onClearLogs, // 添加清除日志回调
+                        selectedLog: _selectedLog,
                       ),
                     ),
                     SizedBox(width: 16),
