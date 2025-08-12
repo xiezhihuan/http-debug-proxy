@@ -211,50 +211,71 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
   }
 
   Widget _buildRequestTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('请求体'),
-          SizedBox(height: 12),
-          widget.log!.requestBody.isNotEmpty
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle('请求体'),
+              SizedBox(height: 12),
+            ],
+          ),
+        ),
+        Expanded(
+          child: widget.log!.requestBody.isNotEmpty
             ? _buildFormattedCodeBlock(widget.log!.requestBody, context, isRequest: true)
             : _buildEmptyState('无请求体'),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildResponseTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('原始响应体'),
-          SizedBox(height: 12),
-          widget.log!.responseBody.isNotEmpty
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle('原始响应体'),
+              SizedBox(height: 12),
+            ],
+          ),
+        ),
+        Expanded(
+          child: widget.log!.responseBody.isNotEmpty
             ? _buildFormattedCodeBlock(widget.log!.responseBody, context, isRequest: false)
             : _buildEmptyState('无响应体'),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildPreviewTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('响应预览'),
-          SizedBox(height: 12),
-          widget.log!.responseBody.isNotEmpty
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle('响应预览'),
+              SizedBox(height: 12),
+            ],
+          ),
+        ),
+        Expanded(
+          child: widget.log!.responseBody.isNotEmpty
             ? _buildCodeBlock(widget.log!.responseBody, context, isPreview: true)
             : _buildEmptyState('无响应内容可预览'),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -491,11 +512,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
             ),
           ),
           // 内容区域
-          Container(
-            width: double.infinity,
-            constraints: BoxConstraints(
-              maxHeight: 500, // 限制最大高度，超出时可滚动
-            ),
+          Expanded( // 使用Expanded让内容区域填充剩余空间
             child: SingleChildScrollView(
               padding: EdgeInsets.all(16),
               child: SelectableText(
@@ -565,11 +582,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
                 ],
               ),
             ),
-            Container(
-              constraints: BoxConstraints(
-                minHeight: 300,
-                maxHeight: 600,
-              ),
+            Expanded( // 使用Expanded让JSON编辑器填充剩余空间
               child: JsonEditor(
                 json: JsonEncoder.withIndent('  ').convert(jsonData),
                 onChanged: (value) {},
