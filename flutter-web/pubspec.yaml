@@ -35,6 +35,9 @@ dependencies:
   web_socket_channel: ^2.4.0
   http: ^1.1.0
   
+  # Local storage
+  shared_preferences: ^2.2.2
+  
   # UI and utilities
   cupertino_icons: ^1.0.8
   intl: ^0.18.1
