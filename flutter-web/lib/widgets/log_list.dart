@@ -7,6 +7,7 @@ class LogList extends StatelessWidget {
   final Function(HttpLog) onLogSelected;
   final bool isListening;
   final VoidCallback onToggleListening;
+  final HttpLog? selectedLog; // 添加选中日志参数
 
   const LogList({
     Key? key,
@@ -14,6 +15,7 @@ class LogList extends StatelessWidget {
     required this.onLogSelected,
     required this.isListening,
     required this.onToggleListening,
+    required this.selectedLog, // 添加选中日志参数
   }) : super(key: key);
 
   @override
@@ -123,6 +125,7 @@ class LogList extends StatelessWidget {
                       return LogTile(
                         log: log,
                         onTap: () => onLogSelected(log),
+                        isSelected: selectedLog?.id == log.id, // 通过ID比较判断是否选中
                       );
                     },
                   ),
@@ -136,11 +139,13 @@ class LogList extends StatelessWidget {
 class LogTile extends StatelessWidget {
   final HttpLog log;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const LogTile({
     Key? key,
     required this.log,
     required this.onTap,
+    required this.isSelected,
   }) : super(key: key);
 
   @override
@@ -149,13 +154,31 @@ class LogTile extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
+        color: isSelected ? Colors.blue.shade50 : Colors.transparent,
         border: Border(
           bottom: BorderSide(color: Colors.grey.shade200),
+          left: BorderSide(
+            color: isSelected ? Colors.blue.shade400 : Colors.transparent,
+            width: 4,
+          ),
         ),
       ),
       child: ListTile(
         onTap: onTap,
-        leading: _buildStatusIndicator(),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStatusIndicator(),
+            if (isSelected) ...[
+              SizedBox(width: 8),
+              Icon(
+                Icons.check_circle,
+                color: Colors.blue.shade600,
+                size: 16,
+              ),
+            ],
+          ],
+        ),
         title: Row(
           children: [
             _buildMethodChip(),
@@ -169,6 +192,8 @@ class LogTile extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 13,
+                    color: isSelected ? Colors.blue.shade800 : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -182,7 +207,7 @@ class LogTile extends StatelessWidget {
               timeFormat.format(log.timestamp),
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
               ),
             ),
             SizedBox(width: 16),
@@ -190,13 +215,15 @@ class LogTile extends StatelessWidget {
               log.formattedDuration,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
               ),
             ),
           ],
         ),
         trailing: _buildStatusChip(),
         dense: true,
+        selected: isSelected,
+        selectedTileColor: Colors.transparent, // 使用自定义背景色
       ),
     );
   }
