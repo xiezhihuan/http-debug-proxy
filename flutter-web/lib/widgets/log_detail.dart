@@ -434,7 +434,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
     try {
       if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
         final jsonData = json.decode(content);
-        displayContent = JsonEncoder.withIndent('  ').convert(jsonData);
+        displayContent = JsonEncoder.withIndent('    ').convert(jsonData); // 改为4个空格
         isJson = true;
       }
     } catch (e) {
@@ -584,7 +584,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
             ),
             Expanded( // 使用Expanded让JSON编辑器填充剩余空间
               child: JsonEditor(
-                json: JsonEncoder.withIndent('  ').convert(jsonData),
+                json: JsonEncoder.withIndent('    ').convert(jsonData), // 改为4个空格
                 onChanged: (value) {},
                 enableMoreOptions: false,
                 enableKeyEdit: false,
@@ -608,7 +608,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
   Widget _buildCopyButton(BuildContext context, dynamic jsonData) {
     return GestureDetector(
       onTap: () {
-        final jsonString = JsonEncoder.withIndent('  ').convert(jsonData);
+        final jsonString = JsonEncoder.withIndent('    ').convert(jsonData); // 改为4个空格
         Clipboard.setData(ClipboardData(text: jsonString));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
