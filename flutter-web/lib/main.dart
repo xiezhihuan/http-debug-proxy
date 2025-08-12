@@ -276,7 +276,7 @@ class _MainScreenState extends State<MainScreen> {
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                '使用说明：将Android应用的网络请求代理到 localhost:8090，然后在此界面实时查看所有HTTP请求和响应数据。',
+                '使用说明：将Android应用的网络请求代理到 localhost:8080，然后在此界面实时查看所有HTTP请求和响应数据。',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade600,
