@@ -195,7 +195,13 @@ class LogTile extends StatelessWidget {
                     color: isSelected ? Colors.blue.shade800 : Colors.black87,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  // 根据HTTP方法决定是否省略URL
+                  overflow: _shouldEllipsisUrl(log.method) 
+                      ? TextOverflow.ellipsis 
+                      : null,
+                  // 对于非GET请求，允许换行显示完整URL
+                  softWrap: !_shouldEllipsisUrl(log.method),
+                  maxLines: _shouldEllipsisUrl(log.method) ? 1 : null,
                 ),
               ),
             ),
@@ -313,5 +319,10 @@ class LogTile extends StatelessWidget {
         shape: BoxShape.circle,
       ),
     );
+  }
+
+  bool _shouldEllipsisUrl(String method) {
+    // GET请求省略显示（节省空间），其他请求完整显示
+    return method.toUpperCase() == 'GET';
   }
 } 
