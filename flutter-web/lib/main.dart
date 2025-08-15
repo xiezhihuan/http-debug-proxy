@@ -220,41 +220,41 @@ class _MainScreenState extends State<MainScreen> {
         color: Colors.grey.shade50,
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Column(
+          child: Row(
             children: [
-              // 过滤栏
-              FilterBar(
-                onFilterChanged: _onFilterChanged,
-                onClearLogs: _onClearLogs,
-                isConnected: _wsService.isConnected,
-              ),
-              SizedBox(height: 16),
-              
-              // 主要内容区域
+              // 左侧：过滤栏 + 日志列表（上下结构）
               Expanded(
-                child: Row(
+                flex: 1,
+                child: Column(
                   children: [
-                    // 左侧：日志列表
+                    // 上方：过滤栏
+                    FilterBar(
+                      onFilterChanged: _onFilterChanged,
+                      onClearLogs: _onClearLogs,
+                      isConnected: _wsService.isConnected,
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // 下方：日志列表
                     Expanded(
-                      flex: 1,
                       child: LogList(
                         logs: _filteredLogs,
                         onLogSelected: _onLogSelected,
                         isListening: _isListening,
                         onToggleListening: _toggleListening,
-                        onClearLogs: _onClearLogs, // 添加清除日志回调
+                        onClearLogs: _onClearLogs,
                         selectedLog: _selectedLog,
                       ),
                     ),
-                    SizedBox(width: 16),
-                    
-                    // 右侧：日志详情
-                    Expanded(
-                      flex: 2,
-                      child: LogDetail(log: _selectedLog),
-                    ),
                   ],
                 ),
+              ),
+              SizedBox(width: 16),
+              
+              // 右侧：日志详情（占满右边）
+              Expanded(
+                flex: 2,
+                child: LogDetail(log: _selectedLog),
               ),
             ],
           ),
