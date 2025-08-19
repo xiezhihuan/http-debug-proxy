@@ -5,8 +5,10 @@ class HttpLog {
   final String url;
   final Map<String, List<String>> requestHeaders;
   final String requestBody;
+  final String requestBodyType;
   final Map<String, List<String>> responseHeaders;
   final String responseBody;
+  final String responseBodyType;
   final int statusCode;
   final int duration;
 
@@ -17,8 +19,10 @@ class HttpLog {
     required this.url,
     required this.requestHeaders,
     required this.requestBody,
+    required this.requestBodyType,
     required this.responseHeaders,
     required this.responseBody,
+    required this.responseBodyType,
     required this.statusCode,
     required this.duration,
   });
@@ -34,11 +38,13 @@ class HttpLog {
           MapEntry(key, List<String>.from(value))) ?? {}
       ),
       requestBody: json['request_body'] ?? '',
+      requestBodyType: json['request_body_type'] ?? 'text',
       responseHeaders: Map<String, List<String>>.from(
         json['response_headers']?.map((key, value) => 
           MapEntry(key, List<String>.from(value))) ?? {}
       ),
       responseBody: json['response_body'] ?? '',
+      responseBodyType: json['response_body_type'] ?? 'text',
       statusCode: json['status_code'] ?? 0,
       duration: json['duration'] ?? 0,
     );

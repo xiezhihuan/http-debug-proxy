@@ -221,12 +221,13 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
             children: [
               _buildSectionTitle('请求体'),
               SizedBox(height: 12),
+              _buildBodyTypeIndicator(widget.log!.requestBodyType, '请求'),
             ],
           ),
         ),
         Expanded(
           child: widget.log!.requestBody.isNotEmpty
-            ? _buildFormattedCodeBlock(widget.log!.requestBody, context, isRequest: true)
+            ? _buildBodyContent(widget.log!.requestBody, widget.log!.requestBodyType, context, isRequest: true)
             : _buildEmptyState('无请求体'),
         ),
       ],
@@ -244,12 +245,13 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
             children: [
               _buildSectionTitle('原始响应体'),
               SizedBox(height: 12),
+              _buildBodyTypeIndicator(widget.log!.responseBodyType, '响应'),
             ],
           ),
         ),
         Expanded(
           child: widget.log!.responseBody.isNotEmpty
-            ? _buildFormattedCodeBlock(widget.log!.responseBody, context, isRequest: false)
+            ? _buildBodyContent(widget.log!.responseBody, widget.log!.responseBodyType, context, isRequest: false)
             : _buildEmptyState('无响应体'),
         ),
       ],
@@ -267,12 +269,13 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
             children: [
               _buildSectionTitle('响应预览'),
               SizedBox(height: 12),
+              _buildBodyTypeIndicator(widget.log!.responseBodyType, '响应'),
             ],
           ),
         ),
         Expanded(
           child: widget.log!.responseBody.isNotEmpty
-            ? _buildCodeBlock(widget.log!.responseBody, context, isPreview: true)
+            ? _buildBodyContent(widget.log!.responseBody, widget.log!.responseBodyType, context, isPreview: true)
             : _buildEmptyState('无响应内容可预览'),
         ),
       ],
@@ -294,9 +297,94 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
           
           _buildSectionTitle('响应头'),
           SizedBox(height: 12),
+          _buildCompressionInfo(),
+          SizedBox(height: 12),
           widget.log!.responseHeaders.isNotEmpty 
             ? _buildHeadersTable(widget.log!.responseHeaders)
             : _buildEmptyState('无响应头'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompressionInfo() {
+    final contentEncoding = widget.log!.responseHeaders['content-encoding'];
+    if (contentEncoding == null || contentEncoding.isEmpty) {
+      return Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          border: Border.all(color: Colors.green.shade200),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+            SizedBox(width: 8),
+            Text(
+              '未压缩响应',
+              style: TextStyle(
+                color: Colors.green.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isCompressed = contentEncoding.any((enc) => 
+      enc.contains('gzip') || enc.contains('deflate') || enc.contains('br')
+    );
+    
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isCompressed ? Colors.orange.shade50 : Colors.blue.shade50,
+        border: Border.all(color: isCompressed ? Colors.orange.shade200 : Colors.blue.shade200),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isCompressed ? Icons.compress : Icons.info,
+            color: isCompressed ? Colors.orange.shade600 : Colors.blue.shade600,
+            size: 20,
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isCompressed ? '压缩响应' : '特殊编码',
+                  style: TextStyle(
+                    color: isCompressed ? Colors.orange.shade700 : Colors.blue.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '编码格式: ${contentEncoding.join(', ')}',
+                  style: TextStyle(
+                    color: isCompressed ? Colors.orange.shade600 : Colors.blue.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+                if (isCompressed) ...[
+                  SizedBox(height: 4),
+                  Text(
+                    '代理服务器已自动解压',
+                    style: TextStyle(
+                      color: Colors.green.shade600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -603,6 +691,32 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
          } else {
        return _buildFormattedCodeBlock(content, context, isRequest: isRequest);
      }
+  }
+
+  Widget _buildBodyTypeIndicator(String bodyType, String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bodyType == 'json' ? Colors.green.shade100 : Colors.blue.shade100,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '$label 体类型: $bodyType',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: bodyType == 'json' ? Colors.green.shade700 : Colors.blue.shade700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBodyContent(String content, String bodyType, BuildContext context, {bool isRequest = false, bool isPreview = false}) {
+    if (bodyType == 'json') {
+      return _buildCodeBlock(content, context, isRequest: isRequest, isPreview: isPreview);
+    } else {
+      return _buildFormattedCodeBlock(content, context, isRequest: isRequest);
+    }
   }
 
   Widget _buildCopyButton(BuildContext context, dynamic jsonData) {

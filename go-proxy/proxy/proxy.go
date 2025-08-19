@@ -13,6 +13,10 @@ import (
 	"sync"
 	"time"
 
+	"compress/flate"
+	"compress/gzip"
+
+	"github.com/andybalholm/brotli"
 	"github.com/google/uuid"
 )
 
@@ -80,6 +84,75 @@ func (p *ProxyServer) Start(proxyPort, webPort string) error {
 	return proxyServer.ListenAndServe()
 }
 
+// decompressResponseBody 解压缩响应体
+func decompressResponseBody(body []byte, headers http.Header) ([]byte, error) {
+	contentEncoding := headers.Get("Content-Encoding")
+	if contentEncoding == "" {
+		return body, nil // 无需解压
+	}
+
+	var uncompressedBody []byte
+	var err error
+
+	switch contentEncoding {
+	case "gzip":
+		uncompressedBody, err = decompressGzip(body)
+	case "deflate":
+		uncompressedBody, err = decompressDeflate(body)
+	case "br":
+		uncompressedBody, err = decompressBrotli(body)
+	case "gzip, deflate":
+		// 处理多重编码，先解压 gzip，再解压 deflate
+		uncompressedBody, err = decompressGzip(body)
+		if err == nil {
+			uncompressedBody, err = decompressDeflate(uncompressedBody)
+		}
+	default:
+		log.Printf("Unsupported content encoding: %s", contentEncoding)
+		return body, nil
+	}
+
+	if err != nil {
+		return body, fmt.Errorf("failed to decompress %s: %v", contentEncoding, err)
+	}
+
+	// 解压成功，移除 Content-Encoding 头
+	headers.Del("Content-Encoding")
+
+	// 更新 Content-Length 头（如果存在）
+	if headers.Get("Content-Length") != "" {
+		headers.Set("Content-Length", strconv.Itoa(len(uncompressedBody)))
+	}
+
+	log.Printf("Successfully decompressed %s response: %d -> %d bytes", contentEncoding, len(body), len(uncompressedBody))
+	return uncompressedBody, nil
+}
+
+// decompressGzip 解压 gzip 内容
+func decompressGzip(data []byte) ([]byte, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	return io.ReadAll(reader)
+}
+
+// decompressDeflate 解压 deflate 内容
+func decompressDeflate(data []byte) ([]byte, error) {
+	reader := flate.NewReader(bytes.NewReader(data))
+	defer reader.Close()
+
+	return io.ReadAll(reader)
+}
+
+// decompressBrotli 解压 brotli 内容
+func decompressBrotli(data []byte) ([]byte, error) {
+	reader := brotli.NewReader(bytes.NewReader(data))
+	return io.ReadAll(reader)
+}
+
 // handleProxyRoot handles all requests to the proxy server
 func (p *ProxyServer) handleProxyRoot(w http.ResponseWriter, r *http.Request) {
 	startTime := time.Now()
@@ -129,6 +202,15 @@ func (p *ProxyServer) handleProxyRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 解压缩响应体（如果需要）
+	responseBody, err = decompressResponseBody(responseBody, resp.Header)
+	if err != nil {
+		log.Printf("Warning: Failed to decompress response body: %v", err)
+		// 继续使用原始内容
+	}
+
+	fmt.Println("responseBody", string(responseBody))
+
 	// Copy response headers
 	for name, values := range resp.Header {
 		for _, value := range values {
@@ -142,17 +224,28 @@ func (p *ProxyServer) handleProxyRoot(w http.ResponseWriter, r *http.Request) {
 
 	// Log the request/response
 	duration := time.Since(startTime).Milliseconds()
+
+	// 获取Content-Type
+	requestContentType := r.Header.Get("Content-Type")
+	responseContentType := resp.Header.Get("Content-Type")
+
+	// 编码请求体和响应体
+	encodedRequestBody, requestBodyType := models.EncodeBody(requestBody, requestContentType)
+	encodedResponseBody, responseBodyType := models.EncodeBody(responseBody, responseContentType)
+
 	httpLog := models.HTTPLog{
-		ID:              logID,
-		Timestamp:       startTime,
-		Method:          r.Method,
-		URL:             r.URL.String(),
-		RequestHeaders:  r.Header,
-		RequestBody:     string(requestBody),
-		ResponseHeaders: resp.Header,
-		ResponseBody:    string(responseBody),
-		StatusCode:      resp.StatusCode,
-		Duration:        duration,
+		ID:               logID,
+		Timestamp:        startTime,
+		Method:           r.Method,
+		URL:              r.URL.String(),
+		RequestHeaders:   r.Header,
+		RequestBody:      encodedRequestBody,
+		RequestBodyType:  requestBodyType,
+		ResponseHeaders:  resp.Header,
+		ResponseBody:     encodedResponseBody,
+		ResponseBodyType: responseBodyType,
+		StatusCode:       resp.StatusCode,
+		Duration:         duration,
 	}
 
 	p.addLog(httpLog)

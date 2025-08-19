@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket 编码测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .test-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .error { background-color: #f8d7da; color: #721c24; }
+    
+    .log {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    
+    button:hover {
+      background-color: #0056b3;
+    }
+    
+    .body-type {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    
+    .type-text { background-color: #d4edda; color: #155724; }
+    .type-binary { background-color: #f8d7da; color: #721c24; }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🔧 WebSocket 编码测试</h1>
+    
+    <div class="status success">
+      ✅ 测试说明：验证 WebSocket 返回的 body 内容是否正确处理编码问题
+    </div>
+    
+    <div>
+      <button onclick="testWebSocket()">测试 WebSocket 连接</button>
+      <button onclick="clearLog()">清空日志</button>
+      <button onclick="testEncoding()">测试编码处理</button>
+    </div>
+    
+    <div class="test-section">
+      <h3>WebSocket 连接状态：</h3>
+      <div id="ws-status" class="log">未连接</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>接收到的消息：</h3>
+      <div id="messages" class="log">等待消息...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>编码测试结果：</h3>
+      <div id="encoding-results" class="log">点击"测试编码处理"开始测试</div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let messageCount = 0;
+    
+    function log(elementId, message) {
+      const element = document.getElementById(elementId);
+      const timestamp = new Date().toLocaleTimeString();
+      element.innerHTML += `[${timestamp}] ${message}\n`;
+      element.scrollTop = element.scrollTop = element.scrollHeight;
+    }
+    
+    function clearLog() {
+      document.getElementById('messages').innerHTML = '';
+      document.getElementById('encoding-results').innerHTML = '';
+    }
+    
+    function testWebSocket() {
+      try {
+        ws = new WebSocket('ws://localhost:8091/api/ws');
+        
+        ws.onopen = function() {
+          log('ws-status', '✅ WebSocket 连接成功');
+        };
+        
+        ws.onmessage = function(event) {
+          messageCount++;
+          log('messages', `📨 收到消息 #${messageCount}:`);
+          
+          try {
+            const data = JSON.parse(event.data);
+            log('messages', `   类型: ${data.type}`);
+            
+            if (data.type === 'new_log') {
+              const log = data.data;
+              log('messages', `   ID: ${log.id}`);
+              log('messages', `   URL: ${log.url}`);
+              log('messages', `   请求体类型: ${log.request_body_type || 'text'}`);
+              log('messages', `   响应体类型: ${log.response_body_type || 'text'}`);
+              
+              // 显示请求体内容
+              if (log.request_body) {
+                const bodyType = log.request_body_type || 'text';
+                const bodyClass = bodyType === 'binary' ? 'type-binary' : 'type-text';
+                log('messages', `   请求体 (${bodyType}): <span class="body-type ${bodyClass}">${bodyType}</span>`);
+                log('messages', `   内容长度: ${log.request_body.length} 字符`);
+                if (bodyType === 'text' && log.request_body.length < 200) {
+                  log('messages', `   内容预览: ${log.request_body.substring(0, 200)}`);
+                }
+              }
+              
+              // 显示响应体内容
+              if (log.response_body) {
+                const bodyType = log.response_body_type || 'text';
+                const bodyClass = bodyType === 'binary' ? 'type-binary' : 'type-text';
+                log('messages', `   响应体 (${bodyType}): <span class="body-type ${bodyClass}">${bodyType}</span>`);
+                log('messages', `   内容长度: ${log.response_body.length} 字符`);
+                if (bodyType === 'text' && log.response_body.length < 200) {
+                  log('messages', `   内容预览: ${log.response_body.substring(0, 200)}`);
+                }
+              }
+            }
+            
+            log('messages', '   ---');
+          } catch (e) {
+            log('messages', `   ❌ 解析消息失败: ${e.message}`);
+            log('messages', `   原始数据: ${event.data}`);
+          }
+        };
+        
+        ws.onerror = function(error) {
+          log('ws-status', `❌ WebSocket 错误: ${error}`);
+        };
+        
+        ws.onclose = function() {
+          log('ws-status', '🔌 WebSocket 连接关闭');
+        };
+        
+      } catch (e) {
+        log('ws-status', `❌ 连接失败: ${e.message}`);
+      }
+    }
+    
+    function testEncoding() {
+      log('encoding-results', '🧪 开始编码测试...');
+      
+      // 测试文本内容
+      const textContent = 'Hello, 世界! 这是一个测试文本。';
+      log('encoding-results', `📝 文本内容测试: ${textContent}`);
+      log('encoding-results', `   长度: ${textContent.length} 字符`);
+      log('encoding-results', `   编码: UTF-8`);
+      
+      // 测试包含特殊字符的内容
+      const specialContent = '特殊字符: \x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0E\x0F';
+      log('encoding-results', `⚠️ 特殊字符测试: ${specialContent}`);
+      log('encoding-results', `   长度: ${specialContent.length} 字符`);
+      log('encoding-results', `   包含控制字符: 是`);
+      
+      // 测试二进制内容（模拟）
+      const binaryContent = 'SGVsbG8sIOS4reWbve+8gQ=='; // base64编码的"Hello, 世界!"
+      log('encoding-results', `🔢 二进制内容测试: ${binaryContent}`);
+      log('encoding-results', `   长度: ${binaryContent.length} 字符`);
+      log('encoding-results', `   编码: Base64`);
+      
+      log('encoding-results', '✅ 编码测试完成');
+    }
+    
+    // 页面加载完成后自动测试WebSocket
+    window.addEventListener('load', () => {
+      log('ws-status', '📄 页面加载完成，准备测试 WebSocket');
+    });
+  </script>
+</body>
+</html>
