@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>重放请求布局测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .test-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .layout-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 20px 0;
+    }
+    
+    .demo-panel {
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    
+    .demo-panel.left {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+    
+    .demo-panel.right {
+      border-color: #28a745;
+      background-color: #e8f5e8;
+    }
+    
+    .demo-panel h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    
+    .demo-panel h4::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .demo-panel.left h4::before {
+      background-color: #007bff;
+    }
+    
+    .demo-panel.right h4::before {
+      background-color: #28a745;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .url-input {
+      min-height: 60px;
+      font-size: 12px;
+    }
+    
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    
+    .header-row input {
+      margin: 0;
+    }
+    
+    .add-header-btn {
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .add-header-btn:hover {
+      background-color: #138496;
+    }
+    
+    .delete-header-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    
+    .delete-header-btn:hover {
+      background-color: #c82333;
+    }
+    
+    .content-type-indicator {
+      background-color: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .content-type-indicator::before {
+      content: 'ℹ️';
+      margin-right: 8px;
+    }
+    
+    .body-input {
+      min-height: 200px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #dee2e6;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      margin: 8px 0;
+      padding: 8px 12px;
+      background-color: white;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+    }
+    
+    .feature-list li::before {
+      content: '✅';
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎨 重放请求布局测试</h1>
+    
+    <div class="status success">
+      ✅ 测试说明：展示重新设计后的重放请求参数编辑页面布局，确保所有参数都能完整展示
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 新布局设计：</h3>
+      <div class="layout-demo">
+        <div class="demo-panel left">
+          <h4>左侧面板：基本信息和请求头</h4>
+          
+          <div class="form-group">
+            <label>请求 URL</label>
+            <textarea class="url-input" placeholder="输入完整的请求URL，例如：https://httpbin.org/post" rows="2">https://httpbin.org/post?param1=value1&param2=value2&longParam=veryLongValueThatNeedsMultipleLines</textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label>HTTP 方法</label>
+              <input type="text" value="POST" placeholder="GET, POST, PUT, DELETE...">
+            </div>
+            <div class="form-group">
+              <label>Content-Type</label>
+              <input type="text" value="application/json" readonly style="background-color: #f8f9fa;">
+            </div>
+          </div>
+          
+          <h5 style="margin: 20px 0 10px 0;">请求头管理</h5>
+          <div class="form-group">
+            <div style="display: flex; gap: 10px;">
+              <input type="text" placeholder="请求头名称" style="flex: 1;">
+              <button class="add-header-btn">添加</button>
+            </div>
+          </div>
+          
+          <div class="header-row">
+            <input type="text" value="Content-Type" readonly>
+            <input type="text" value="application/json">
+            <button class="delete-header-btn">删除</button>
+          </div>
+          
+          <div class="header-row">
+            <input type="text" value="User-Agent" readonly>
+            <input type="text" value="Replay-Test/1.0">
+            <button class="delete-header-btn">删除</button>
+          </div>
+          
+          <div class="header-row">
+            <input type="text" value="Authorization" readonly>
+            <input type="text" value="Bearer token123">
+            <button class="delete-header-btn">删除</button>
+          </div>
+        </div>
+        
+        <div class="demo-panel right">
+          <h4>右侧面板：请求体编辑</h4>
+          
+          <div class="content-type-indicator">
+            请求体类型: application/json
+          </div>
+          
+          <div class="form-group">
+            <label>请求体内容</label>
+            <textarea class="body-input" placeholder="输入请求体内容...
+
+示例 JSON:
+{
+  &quot;key&quot;: &quot;value&quot;,
+  &quot;number&quot;: 123,
+  &quot;boolean&quot;: true,
+  &quot;array&quot;: [1, 2, 3],
+  &quot;object&quot;: {
+    &quot;nested&quot;: &quot;data&quot;
+  }
+}">{
+  "key": "value",
+  "number": 123,
+  "boolean": true,
+  "array": [1, 2, 3],
+  "object": {
+    "nested": "data"
+  }
+}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔧 布局优化特点：</h3>
+      <div class="layout-demo">
+        <div>
+          <h4>📐 空间分配优化</h4>
+          <ul class="feature-list">
+            <li>对话框尺寸：1000x700（增加宽度和高度）</li>
+            <li>左右分栏布局：基本信息和请求头 vs 请求体</li>
+            <li>URL输入框：支持多行显示长URL</li>
+            <li>请求体编辑：充分利用垂直空间</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4>🎨 用户体验改进</h4>
+          <ul class="feature-list">
+            <li>Content-Type 自动显示和提示</li>
+            <li>请求头管理区域独立且清晰</li>
+            <li>请求体类型指示器</li>
+            <li>表单控件大小和间距优化</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📱 响应式设计：</h3>
+      <ul class="feature-list">
+        <li>使用 Expanded 和 flex 确保空间充分利用</li>
+        <li>支持不同屏幕尺寸和分辨率</li>
+        <li>滚动条自动处理长内容</li>
+        <li>表单控件自适应容器大小</li>
+      </ul>
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 操作按钮区域：</h3>
+      <div class="action-buttons">
+        <button class="btn btn-secondary">取消</button>
+        <button class="btn btn-primary">🔄 重放请求</button>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>✅ 布局优势总结：</h3>
+      <div class="layout-demo">
+        <div>
+          <h4>🎨 视觉层次</h4>
+          <ul class="feature-list">
+            <li>清晰的分区设计</li>
+            <li>合理的颜色搭配</li>
+            <li>一致的间距和圆角</li>
+            <li>直观的图标和标签</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4>⚡ 功能效率</h4>
+          <ul class="feature-list">
+            <li>所有参数一目了然</li>
+            <li>操作流程更加直观</li>
+            <li>空间利用更加合理</li>
+            <li>编辑体验更加流畅</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟添加请求头功能
+    document.querySelector('.add-header-btn').addEventListener('click', function() {
+      const input = this.previousElementSibling;
+      const headerName = input.value.trim();
+      
+      if (headerName) {
+        const headerRow = document.createElement('div');
+        headerRow.className = 'header-row';
+        headerRow.innerHTML = `
+          <input type="text" value="${headerName}" readonly>
+          <input type="text" placeholder="值">
+          <button class="delete-header-btn" onclick="this.parentElement.remove()">删除</button>
+        `;
+        
+        input.parentElement.parentElement.appendChild(headerRow);
+        input.value = '';
+      }
+    });
+    
+    // 模拟删除请求头功能
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('delete-header-btn')) {
+        e.target.parentElement.remove();
+      }
+    });
+    
+    // 模拟重放请求功能
+    document.querySelector('.btn-primary').addEventListener('click', function() {
+      this.textContent = '🔄 重放中...';
+      this.disabled = true;
+      
+      setTimeout(() => {
+        this.textContent = '🔄 重放请求';
+        this.disabled = false;
+        alert('重放请求功能演示完成！');
+      }, 2000);
+    });
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

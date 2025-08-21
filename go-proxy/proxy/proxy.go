@@ -58,6 +58,7 @@ func (p *ProxyServer) Start(proxyPort, webPort string) error {
 	mux.HandleFunc("/api/listening/start", p.handleStartListening)
 	mux.HandleFunc("/api/listening/stop", p.handleStopListening)
 	mux.HandleFunc("/api/listening/status", p.handleListeningStatus)
+	mux.HandleFunc("/api/replay", p.handleReplayRequest)
 	mux.HandleFunc("/api/ws", p.wsHub.HandleWebSocket)
 
 	// Static file handler for Flutter web
@@ -151,6 +152,153 @@ func decompressDeflate(data []byte) ([]byte, error) {
 func decompressBrotli(data []byte) ([]byte, error) {
 	reader := brotli.NewReader(bytes.NewReader(data))
 	return io.ReadAll(reader)
+}
+
+// handleReplayRequest 处理请求重放
+func (p *ProxyServer) handleReplayRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// 解析重放请求参数
+	var replayReq struct {
+		OriginalLogID string            `json:"original_log_id"`
+		Method        string            `json:"method"`
+		URL           string            `json:"url"`
+		Headers       map[string]string `json:"headers"`
+		Body          string            `json:"body"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&replayReq); err != nil {
+		log.Printf("Failed to decode replay request: %v", err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// 验证必要参数
+	if replayReq.URL == "" {
+		log.Printf("Replay request failed: URL is empty")
+		http.Error(w, "URL is required", http.StatusBadRequest)
+		return
+	}
+
+	// 处理URL协议问题
+	finalURL := replayReq.URL
+	if !strings.HasPrefix(finalURL, "http://") && !strings.HasPrefix(finalURL, "https://") {
+		// 如果没有协议前缀，自动添加代理服务器地址
+		if strings.HasPrefix(finalURL, "/") {
+			// 如果是绝对路径，添加代理服务器地址
+			finalURL = p.targetURL + finalURL
+		} else {
+			// 如果是相对路径，添加代理服务器地址
+			finalURL = p.targetURL + "/" + finalURL
+		}
+		log.Printf("🔧 自动添加协议前缀，URL: %s -> %s", replayReq.URL, finalURL)
+	}
+
+	// 添加调试日志
+	log.Printf("🔄 开始重放请求:")
+	log.Printf("   原始日志ID: %s", replayReq.OriginalLogID)
+	log.Printf("   方法: %s", replayReq.Method)
+	log.Printf("   原始URL: %s", replayReq.URL)
+	log.Printf("   最终URL: %s", finalURL)
+	log.Printf("   请求头数量: %d", len(replayReq.Headers))
+	log.Printf("   请求体长度: %d bytes", len(replayReq.Body))
+
+	// 创建重放请求
+	startTime := time.Now()
+	logID := uuid.New().String()
+
+	// 准备请求体
+	var bodyReader io.Reader
+	if replayReq.Body != "" {
+		bodyReader = strings.NewReader(replayReq.Body)
+	}
+
+	// 创建 HTTP 请求
+	req, err := http.NewRequest(replayReq.Method, finalURL, bodyReader)
+	if err != nil {
+		http.Error(w, "Failed to create request", http.StatusInternalServerError)
+		return
+	}
+
+	// 设置请求头
+	for key, value := range replayReq.Headers {
+		req.Header.Set(key, value)
+		log.Printf("   设置请求头: %s = %s", key, value)
+	}
+
+	// 发送请求
+	log.Printf("🚀 发送重放请求到: %s", finalURL)
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("❌ 重放请求失败: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to send request: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	log.Printf("✅ 重放请求成功，状态码: %d", resp.StatusCode)
+
+	// 读取响应体
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Failed to read response body: %v", err)
+		http.Error(w, "Failed to read response body", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("📥 响应体大小: %d bytes", len(responseBody))
+
+	// 解压缩响应体（如果需要）
+	responseBody, err = decompressResponseBody(responseBody, resp.Header)
+	if err != nil {
+		log.Printf("Warning: Failed to decompress replay response body: %v", err)
+	}
+
+	// 记录重放请求
+	duration := time.Since(startTime).Milliseconds()
+
+	// 获取Content-Type
+	requestContentType := req.Header.Get("Content-Type")
+	responseContentType := resp.Header.Get("Content-Type")
+
+	// 编码请求体和响应体
+	encodedRequestBody, requestBodyType := models.EncodeBody([]byte(replayReq.Body), requestContentType)
+	encodedResponseBody, responseBodyType := models.EncodeBody(responseBody, responseContentType)
+
+	replayLog := models.HTTPLog{
+		ID:               logID,
+		Timestamp:        startTime,
+		Method:           replayReq.Method,
+		URL:              finalURL, // 使用处理后的URL
+		RequestHeaders:   req.Header,
+		RequestBody:      encodedRequestBody,
+		RequestBodyType:  requestBodyType,
+		ResponseHeaders:  resp.Header,
+		ResponseBody:     encodedResponseBody,
+		ResponseBodyType: responseBodyType,
+		StatusCode:       resp.StatusCode,
+		Duration:         duration,
+	}
+
+	// 添加重放日志
+	p.addLog(replayLog)
+
+	log.Printf("📝 重放日志已记录，ID: %s, 耗时: %dms", logID, duration)
+
+	// 返回重放结果
+	w.Header().Set("Content-Type", "application/json")
+	result := map[string]interface{}{
+		"success":     true,
+		"log_id":      logID,
+		"message":     "Request replayed successfully",
+		"status_code": resp.StatusCode,
+		"duration":    duration,
+	}
+	json.NewEncoder(w).Encode(result)
 }
 
 // handleProxyRoot handles all requests to the proxy server

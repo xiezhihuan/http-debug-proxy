@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>右键菜单禁用测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .test-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .error { background-color: #f8d7da; color: #721c24; }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .test-area {
+      padding: 20px;
+      margin: 10px 0;
+      border: 2px dashed #007bff;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .test-area:hover {
+      background-color: #e9ecef;
+      border-color: #0056b3;
+    }
+    
+    .test-area:active {
+      background-color: #dee2e6;
+    }
+    
+    .log {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    
+    button:hover {
+      background-color: #0056b3;
+    }
+    
+    .control-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .control-item {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .control-item h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    
+    .enabled { border-color: #28a745; background-color: #d4edda; }
+    .disabled { border-color: #dc3545; background-color: #f8d7da; }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🚫 右键菜单禁用测试</h1>
+    
+    <div class="status success">
+      ✅ 测试说明：验证浏览器默认右键菜单是否被正确禁用，确保 Flutter 自定义右键菜单功能正常工作
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 测试区域：</h3>
+      <p>在以下区域尝试右键点击，应该不会出现浏览器默认右键菜单：</p>
+      
+      <div class="test-area" id="testArea1">
+        <h4>测试区域 1</h4>
+        <p>点击右键测试 - 应该被禁用</p>
+        <small>这是模拟 Flutter 应用区域</small>
+      </div>
+      
+      <div class="test-area" id="testArea2">
+        <h4>测试区域 2</h4>
+        <p>点击右键测试 - 应该被禁用</p>
+        <small>这是模拟日志列表区域</small>
+      </div>
+      
+      <div class="test-area" id="testArea3">
+        <h4>测试区域 3</h4>
+        <p>点击右键测试 - 应该被禁用</p>
+        <small>这是模拟请求详情区域</small>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🎮 控制面板：</h3>
+      <div class="control-panel">
+        <div class="control-item" id="globalControl">
+          <h4>全局右键菜单</h4>
+          <button onclick="toggleGlobalContextMenu()" id="globalBtn">禁用</button>
+          <p id="globalStatus">已禁用</p>
+        </div>
+        
+        <div class="control-item" id="elementControl">
+          <h4>元素右键菜单</h4>
+          <button onclick="toggleElementContextMenu()" id="elementBtn">禁用</button>
+          <p id="elementStatus">已禁用</p>
+        </div>
+        
+        <div class="control-item" id="keyboardControl">
+          <h4>键盘快捷键</h4>
+          <button onclick="toggleKeyboardShortcuts()" id="keyboardBtn">禁用</button>
+          <p id="keyboardStatus">已禁用</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📊 测试结果：</h3>
+      <div id="testResults" class="log">等待测试结果...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔧 功能说明：</h3>
+      <ul>
+        <li><strong>全局禁用</strong>：禁用整个页面的右键菜单</li>
+        <li><strong>元素禁用</strong>：为特定元素禁用右键菜单</li>
+        <li><strong>键盘禁用</strong>：禁用 F10 等右键菜单快捷键</li>
+        <li><strong>Flutter 集成</strong>：与 Flutter 自定义右键菜单完美配合</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 引入右键菜单禁用工具 -->
+  <script src="disable-context-menu.js"></script>
+  
+  <script>
+    let globalDisabled = true;
+    let elementDisabled = true;
+    let keyboardDisabled = true;
+    
+    function log(message) {
+      const element = document.getElementById('testResults');
+      const timestamp = new Date().toLocaleTimeString();
+      element.innerHTML += `[${timestamp}] ${message}\n`;
+      element.scrollTop = element.scrollHeight;
+    }
+    
+    function updateStatus() {
+      // 更新全局状态
+      const globalControl = document.getElementById('globalControl');
+      const globalBtn = document.getElementById('globalBtn');
+      const globalStatus = document.getElementById('globalStatus');
+      
+      if (globalDisabled) {
+        globalControl.className = 'control-item disabled';
+        globalBtn.textContent = '启用';
+        globalStatus.textContent = '已禁用';
+      } else {
+        globalControl.className = 'control-item enabled';
+        globalBtn.textContent = '禁用';
+        globalStatus.textContent = '已启用';
+      }
+      
+      // 更新元素状态
+      const elementControl = document.getElementById('elementControl');
+      const elementBtn = document.getElementById('elementBtn');
+      const elementStatus = document.getElementById('elementStatus');
+      
+      if (elementDisabled) {
+        elementControl.className = 'control-item disabled';
+        elementBtn.textContent = '启用';
+        elementStatus.textContent = '已禁用';
+      } else {
+        elementControl.className = 'control-item enabled';
+        elementBtn.textContent = '禁用';
+        elementStatus.textContent = '已启用';
+      }
+      
+      // 更新键盘状态
+      const keyboardControl = document.getElementById('keyboardControl');
+      const keyboardBtn = document.getElementById('keyboardBtn');
+      const keyboardStatus = document.getElementById('keyboardStatus');
+      
+      if (keyboardDisabled) {
+        keyboardControl.className = 'control-item disabled';
+        keyboardBtn.textContent = '启用';
+        keyboardStatus.textContent = '已禁用';
+      } else {
+        keyboardControl.className = 'control-item enabled';
+        keyboardBtn.textContent = '禁用';
+        keyboardStatus.textContent = '已启用';
+      }
+    }
+    
+    function toggleGlobalContextMenu() {
+      if (globalDisabled) {
+        // 启用全局右键菜单
+        window.ContextMenuControl.enableFor('body');
+        globalDisabled = false;
+        log('✅ 全局右键菜单已启用');
+      } else {
+        // 禁用全局右键菜单
+        window.ContextMenuControl.disable();
+        globalDisabled = true;
+        log('🚫 全局右键菜单已禁用');
+      }
+      updateStatus();
+    }
+    
+    function toggleElementContextMenu() {
+      if (elementDisabled) {
+        // 启用元素右键菜单
+        window.ContextMenuControl.enableFor('.test-area');
+        elementDisabled = false;
+        log('✅ 元素右键菜单已启用');
+      } else {
+        // 禁用元素右键菜单
+        window.ContextMenuControl.disableFor('.test-area');
+        elementDisabled = true;
+        log('🚫 元素右键菜单已禁用');
+      }
+      updateStatus();
+    }
+    
+    function toggleKeyboardShortcuts() {
+      if (keyboardDisabled) {
+        // 启用键盘快捷键
+        document.removeEventListener('keydown', keyboardHandler);
+        keyboardDisabled = false;
+        log('✅ 键盘快捷键已启用');
+      } else {
+        // 禁用键盘快捷键
+        document.addEventListener('keydown', keyboardHandler);
+        keyboardDisabled = true;
+        log('🚫 键盘快捷键已禁用');
+      }
+      updateStatus();
+    }
+    
+    function keyboardHandler(e) {
+      if (e.key === 'F10' || (e.shiftKey && e.key === 'F10')) {
+        e.preventDefault();
+        log('🚫 阻止了键盘快捷键: ' + (e.shiftKey ? 'Shift+F10' : 'F10'));
+        return false;
+      }
+    }
+    
+    // 为测试区域添加右键事件监听
+    document.querySelectorAll('.test-area').forEach(function(area, index) {
+      area.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        log(`🚫 测试区域 ${index + 1} 的右键菜单被阻止`);
+        return false;
+      });
+      
+      area.addEventListener('click', function() {
+        log(`🖱️ 测试区域 ${index + 1} 被点击`);
+      });
+    });
+    
+    // 页面加载完成后初始化
+    window.addEventListener('load', function() {
+      log('📄 页面加载完成');
+      log('🚫 右键菜单禁用功能已初始化');
+      log('✅ 可以开始测试右键菜单禁用功能');
+      
+      // 初始化状态
+      updateStatus();
+      
+      // 添加键盘快捷键监听
+      document.addEventListener('keydown', keyboardHandler);
+    });
+    
+    // 测试键盘快捷键
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F10') {
+        log('🎹 检测到 F10 键 - 右键菜单快捷键');
+      }
+    });
+  </script>
+</body>
+</html>

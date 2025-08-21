@@ -31,6 +31,26 @@
 
   <title>flutter_web</title>
   <link rel="manifest" href="manifest.json">
+  <script src="flutter.js" defer></script>
+  
+  <!-- 禁用浏览器默认右键菜单 -->
+  <script src="disable-context-menu.js"></script>
+  
+  <!-- 禁用浏览器默认右键菜单 -->
+  <script>
+    // 禁用浏览器默认右键菜单，避免与Flutter自定义右键菜单冲突
+    document.addEventListener('contextmenu', function(e) {
+      // 阻止默认右键菜单
+      e.preventDefault();
+      return false;
+    });
+    
+    // 为特定区域保留右键功能（如果需要的话）
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚫 浏览器默认右键菜单已禁用');
+      console.log('✅ Flutter 自定义右键菜单功能已启用');
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

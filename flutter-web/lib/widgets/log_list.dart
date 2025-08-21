@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/http_log.dart';
+import 'context_menu.dart';
+import 'replay_dialog.dart';
 
-class LogList extends StatelessWidget {
+class LogList extends StatefulWidget {
   final List<HttpLog> logs;
   final Function(HttpLog) onLogSelected;
   final bool isListening;
@@ -21,18 +24,25 @@ class LogList extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _LogListState createState() => _LogListState();
+}
+
+class _LogListState extends State<LogList> {
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         children: [
+          // 头部区域
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Colors.grey.shade50,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(8),
                 topRight: Radius.circular(8),
@@ -44,90 +54,84 @@ class LogList extends StatelessWidget {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'HTTP请求日志 (${logs.length})',
+                    'HTTP请求日志 (${widget.logs.length})',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                // 监听控制按钮
+                // 监听状态切换按钮
                 Container(
                   decoration: BoxDecoration(
-                    color: isListening ? Colors.green.shade100 : Colors.red.shade100,
+                    color: widget.isListening ? Colors.green.shade100 : Colors.red.shade100,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isListening ? Colors.green.shade300 : Colors.red.shade300,
+                      color: widget.isListening ? Colors.green.shade300 : Colors.red.shade300,
                       width: 1,
                     ),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: onToggleListening,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isListening ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                              size: 16,
-                              color: isListening ? Colors.green.shade700 : Colors.red.shade700,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: widget.onToggleListening,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            widget.isListening ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                            size: 16,
+                            color: widget.isListening ? Colors.green.shade700 : Colors.red.shade700,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            widget.isListening ? '监听中' : '已停止',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: widget.isListening ? Colors.green.shade700 : Colors.red.shade700,
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              isListening ? '监听中' : '已停止',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isListening ? Colors.green.shade700 : Colors.red.shade700,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 12), // 添加间距
+                SizedBox(width: 12),
                 // 清除日志按钮
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.red.shade100,
+                    color: Colors.orange.shade100,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.red.shade300,
+                      color: Colors.orange.shade300,
                       width: 1,
                     ),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: onClearLogs,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.delete_sweep,
-                              size: 16,
-                              color: Colors.red.shade700,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: widget.onClearLogs,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.clear_all,
+                            size: 16,
+                            color: Colors.orange.shade700,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '清除日志',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.orange.shade700,
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              '清除日志',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red.shade700,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -135,16 +139,22 @@ class LogList extends StatelessWidget {
               ],
             ),
           ),
+          
+          // 日志列表
           Expanded(
-            child: logs.isEmpty
+            child: widget.logs.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inbox, size: 64, color: Colors.grey),
+                        Icon(
+                          Icons.inbox,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
                         SizedBox(height: 16),
                         Text(
-                          '暂无HTTP请求记录',
+                          '暂无HTTP请求日志',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -152,7 +162,7 @@ class LogList extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '等待Android应用发送请求...',
+                          '开始监听后将显示所有HTTP请求',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade500,
@@ -162,13 +172,13 @@ class LogList extends StatelessWidget {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: logs.length,
+                    itemCount: widget.logs.length,
                     itemBuilder: (context, index) {
-                      final log = logs[logs.length - 1 - index]; // 最新的在上面
+                      final log = widget.logs[widget.logs.length - 1 - index]; // 最新的在上面
                       return LogTile(
                         log: log,
-                        onTap: () => onLogSelected(log),
-                        isSelected: selectedLog?.id == log.id, // 通过ID比较判断是否选中
+                        onTap: () => widget.onLogSelected(log),
+                        isSelected: widget.selectedLog?.id == log.id, // 通过ID比较判断是否选中
                       );
                     },
                   ),
@@ -193,93 +203,115 @@ class LogTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = DateFormat('HH:mm:ss.SSS');
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.shade50 : Colors.transparent,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200),
-          left: BorderSide(
-            color: isSelected ? Colors.blue.shade400 : Colors.transparent,
-            width: 4,
+    return GestureDetector(
+      onSecondaryTapDown: (details) {
+        _showContextMenu(context, details.globalPosition);
+      },
+      onSecondaryTap: () {
+        // 阻止浏览器默认右键菜单
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.shade50 : Colors.transparent,
+          border: Border(
+            bottom: BorderSide(color: Colors.grey.shade200),
           ),
         ),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildStatusIndicator(),
-            if (isSelected) ...[
+        child: ListTile(
+          onTap: onTap,
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildMethodChip(log.method),
               SizedBox(width: 8),
-              Icon(
-                Icons.check_circle,
-                color: Colors.blue.shade600,
-                size: 16,
-              ),
+              _buildStatusCodeChip(log.statusCode),
             ],
-          ],
-        ),
-        title: Row(
-          children: [
-            _buildMethodChip(),
-            SizedBox(width: 8),
-            Expanded(
-              child: Tooltip(
-                message: log.url,
-                waitDuration: Duration(milliseconds: 500),
-                child: Text(
-                  log.url,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    color: isSelected ? Colors.blue.shade800 : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                  // 根据HTTP方法决定是否省略URL
-                  overflow: _shouldEllipsisUrl(log.method) 
-                      ? TextOverflow.ellipsis 
-                      : null,
-                  // 对于非GET请求，允许换行显示完整URL
-                  softWrap: !_shouldEllipsisUrl(log.method),
-                  maxLines: _shouldEllipsisUrl(log.method) ? 1 : null,
+          ),
+          title: Text(
+            log.url,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${log.formattedDuration} • ${DateFormat('HH:mm:ss').format(log.timestamp)}',
+                style: TextStyle(fontSize: 12),
+              ),
+              if (log.requestBody.isNotEmpty)
+                Text(
+                  '请求体: ${log.requestBody.length} 字符',
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
-              ),
-            ),
-          ],
+            ],
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: isSelected ? Colors.blue.shade600 : Colors.grey.shade400,
+          ),
         ),
-        subtitle: Row(
-          children: [
-            Text(
-              timeFormat.format(log.timestamp),
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
-              ),
-            ),
-            SizedBox(width: 16),
-            Text(
-              log.formattedDuration,
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-        trailing: _buildStatusChip(),
-        dense: true,
-        selected: isSelected,
-        selectedTileColor: Colors.transparent, // 使用自定义背景色
       ),
     );
   }
 
-  Widget _buildMethodChip() {
+  void _showContextMenu(BuildContext context, Offset position) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect relativeRect = RelativeRect.fromRect(
+      Rect.fromPoints(position, position),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      position: relativeRect,
+      items: [
+        PopupMenuItem(
+          child: ListTile(
+            leading: Icon(Icons.replay, color: Colors.blue),
+            title: Text('重放请求'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          onTap: () {
+            // 延迟执行，避免菜单关闭动画冲突
+            Future.delayed(Duration(milliseconds: 100), () {
+              showDialog(
+                context: context,
+                builder: (context) => ReplayDialog(originalLog: log),
+              );
+            });
+          },
+        ),
+        PopupMenuItem(
+          child: ListTile(
+            leading: Icon(Icons.copy, color: Colors.green),
+            title: Text('复制URL'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          onTap: () {
+            _copyRequestToClipboard(context);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _copyRequestToClipboard(BuildContext context) {
+    // 只复制URL
+    final url = log.url;
+    
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('URL已复制到剪贴板')),
+    );
+  }
+
+  Widget _buildMethodChip(String method) {
     Color color;
-    switch (log.method.toUpperCase()) {
+    switch (method.toUpperCase()) {
       case 'GET':
         color = Colors.green;
         break;
@@ -303,7 +335,7 @@ class LogTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        log.method.toUpperCase(),
+        method.toUpperCase(),
         style: TextStyle(
           color: Colors.white,
           fontSize: 10,
@@ -313,15 +345,15 @@ class LogTile extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip() {
+  Widget _buildStatusCodeChip(int statusCode) {
     Color color;
-    if (log.statusCode >= 200 && log.statusCode < 300) {
+    if (statusCode >= 200 && statusCode < 300) {
       color = Colors.green;
-    } else if (log.statusCode >= 300 && log.statusCode < 400) {
+    } else if (statusCode >= 300 && statusCode < 400) {
       color = Colors.blue;
-    } else if (log.statusCode >= 400 && log.statusCode < 500) {
+    } else if (statusCode >= 400 && statusCode < 500) {
       color = Colors.orange;
-    } else if (log.statusCode >= 500) {
+    } else if (statusCode >= 500) {
       color = Colors.red;
     } else {
       color = Colors.grey;
@@ -334,7 +366,7 @@ class LogTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        log.statusCode.toString(),
+        statusCode.toString(),
         style: TextStyle(
           color: Colors.white,
           fontSize: 11,
@@ -342,30 +374,5 @@ class LogTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Widget _buildStatusIndicator() {
-    Color color;
-    if (log.statusCode >= 200 && log.statusCode < 300) {
-      color = Colors.green;
-    } else if (log.statusCode >= 400) {
-      color = Colors.red;
-    } else {
-      color = Colors.orange;
-    }
-
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-
-  bool _shouldEllipsisUrl(String method) {
-    // GET请求省略显示（节省空间），其他请求完整显示
-    return method.toUpperCase() == 'GET';
   }
 } 

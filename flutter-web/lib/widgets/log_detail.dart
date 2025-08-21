@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:json_editor_flutter/json_editor_flutter.dart';
 import '../models/http_log.dart';
+import 'replay_dialog.dart';
 
 class LogDetail extends StatefulWidget {
   final HttpLog? log;
@@ -85,10 +86,86 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
                   ),
                 ),
                 Spacer(),
+                // 复制URL按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.blue.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => _copyUrlToClipboard(context),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.link,
+                            size: 14,
+                            color: Colors.blue.shade700,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '复制URL',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                // 重放请求按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.green.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => _replayRequest(context),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.replay,
+                            size: 14,
+                            color: Colors.green.shade700,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '重放请求',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
                 IconButton(
                   icon: Icon(Icons.copy),
                   onPressed: () => _copyToClipboard(context),
-                  tooltip: '复制详情',
+                  tooltip: '复制完整详情',
                 ),
               ],
             ),
@@ -798,6 +875,28 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
         content: Text('详情已复制到剪贴板'),
         duration: Duration(seconds: 2),
       ),
+    );
+  }
+
+  void _copyUrlToClipboard(BuildContext context) {
+    if (widget.log == null) return;
+
+    Clipboard.setData(ClipboardData(text: widget.log!.url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('URL已复制到剪贴板'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _replayRequest(BuildContext context) {
+    if (widget.log == null) return;
+
+    // 显示重放请求对话框
+    showDialog(
+      context: context,
+      builder: (context) => ReplayDialog(originalLog: widget.log!),
     );
   }
 }

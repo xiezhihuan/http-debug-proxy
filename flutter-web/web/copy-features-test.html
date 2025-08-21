@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>复制功能测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .test-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .feature-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .demo-card {
+      padding: 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      text-align: center;
+    }
+    
+    .demo-card.url-copy {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+    
+    .demo-card.full-copy {
+      border-color: #28a745;
+      background-color: #e8f5e8;
+    }
+    
+    .demo-card h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .demo-url {
+      background-color: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 15px 0;
+      border: 1px solid #dee2e6;
+      word-break: break-all;
+    }
+    
+    .copy-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    
+    .copy-button:hover {
+      background-color: #0056b3;
+    }
+    
+    .copy-button.url {
+      background-color: #007bff;
+    }
+    
+    .copy-button.full {
+      background-color: #28a745;
+    }
+    
+    .copy-button.url:hover {
+      background-color: #0056b3;
+    }
+    
+    .copy-button.full:hover {
+      background-color: #218838;
+    }
+    
+    .log {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .feature-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .comparison-item {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background-color: white;
+    }
+    
+    .comparison-item h5 {
+      margin: 0 0 10px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    
+    .comparison-item h5::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .comparison-item.url h5::before {
+      background-color: #007bff;
+    }
+    
+    .comparison-item.full h5::before {
+      background-color: #28a745;
+    }
+    
+    .comparison-item ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .comparison-item li {
+      margin: 5px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>📋 复制功能测试</h1>
+    
+    <div class="status info">
+      ℹ️ 测试说明：验证两种不同的复制功能 - URL复制和完整信息复制，确保功能清晰且互不冲突
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 功能演示：</h3>
+      <div class="feature-demo">
+        <div class="demo-card url-copy">
+          <h4>🔗 URL 复制</h4>
+          <p>快速复制请求的 URL 地址</p>
+          <div class="demo-url" id="demoUrl">
+            https://httpbin.org/post?param1=value1&param2=value2
+          </div>
+          <button class="copy-button url" onclick="copyUrl()">
+            📋 复制URL
+          </button>
+          <p><small>适用于：快速分享链接、在新标签页打开等</small></p>
+        </div>
+        
+        <div class="demo-card full-copy">
+          <h4>📄 完整信息复制</h4>
+          <p>复制请求的完整详细信息</p>
+          <div class="demo-url" id="demoFullInfo">
+            HTTP请求详情
+            方法: POST
+            URL: https://httpbin.org/post
+            状态码: 200
+            耗时: 150ms
+            ...
+          </div>
+          <button class="copy-button full" onclick="copyFullInfo()">
+            📋 复制完整信息
+          </button>
+          <p><small>适用于：调试分析、文档记录等</small></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📊 功能对比：</h3>
+      <div class="feature-comparison">
+        <div class="comparison-item url">
+          <h5>URL 复制功能</h5>
+          <ul>
+            <li>只复制请求的 URL 地址</li>
+            <li>操作快速，响应迅速</li>
+            <li>适用于链接分享和导航</li>
+            <li>数据量小，剪贴板友好</li>
+            <li>右键菜单中的"复制URL"按钮</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-item full">
+          <h5>完整信息复制功能</h5>
+          <ul>
+            <li>复制请求的所有详细信息</li>
+            <li>包含方法、状态码、请求头、响应体等</li>
+            <li>适用于调试和文档记录</li>
+            <li>数据量大，信息完整</li>
+            <li>详情页面的"复制完整详情"按钮</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔧 使用方法：</h3>
+      <div class="feature-demo">
+        <div class="demo-card">
+          <h4>🖱️ 右键菜单</h4>
+          <p>在日志列表中右键点击任意请求：</p>
+          <ul style="text-align: left;">
+            <li>🔄 重放请求</li>
+            <li><strong>📋 复制URL</strong> ← 只复制URL</li>
+            <li>🗑️ 删除日志</li>
+          </ul>
+        </div>
+        
+        <div class="demo-card">
+          <h4>📱 详情页面</h4>
+          <p>在请求详情页面：</p>
+          <ul style="text-align: left;">
+            <li><strong>🔗 复制URL</strong> ← 只复制URL</li>
+            <li><strong>📋 复制完整详情</strong> ← 复制所有信息</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📝 复制结果：</h3>
+      <div id="copyResults" class="log">等待复制操作...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>✅ 功能特点：</h3>
+      <ul>
+        <li><strong>功能分离</strong>：URL复制和完整信息复制功能明确分离</li>
+        <li><strong>用户友好</strong>：按钮文本清晰，功能一目了然</li>
+        <li><strong>性能优化</strong>：URL复制快速响应，完整复制提供详细信息</li>
+        <li><strong>场景适配</strong>：不同场景下选择合适的复制功能</li>
+        <li><strong>无冲突</strong>：两种功能互不干扰，各司其职</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function log(message) {
+      const element = document.getElementById('copyResults');
+      const timestamp = new Date().toLocaleTimeString();
+      element.innerHTML += `[${timestamp}] ${message}\n`;
+      element.scrollTop = element.scrollHeight;
+    }
+    
+    async function copyUrl() {
+      const url = document.getElementById('demoUrl').textContent;
+      
+      try {
+        await navigator.clipboard.writeText(url);
+        log('✅ URL已复制到剪贴板');
+        log(`   内容: ${url}`);
+        log('   用途: 快速分享链接、在新标签页打开等');
+        log('   ---');
+      } catch (err) {
+        log('❌ 复制失败: ' + err.message);
+        // 降级方案
+        fallbackCopy(url);
+      }
+    }
+    
+    async function copyFullInfo() {
+      const fullInfo = document.getElementById('demoFullInfo').textContent;
+      
+      try {
+        await navigator.clipboard.writeText(fullInfo);
+        log('✅ 完整信息已复制到剪贴板');
+        log(`   内容: ${fullInfo.substring(0, 100)}...`);
+        log('   用途: 调试分析、文档记录等');
+        log('   ---');
+      } catch (err) {
+        log('❌ 复制失败: ' + err.message);
+        // 降级方案
+        fallbackCopy(fullInfo);
+      }
+    }
+    
+    function fallbackCopy(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        log('✅ 使用降级方案复制成功');
+      } catch (err) {
+        log('❌ 降级方案也失败了: ' + err.message);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+    
+    // 页面加载完成后初始化
+    window.addEventListener('load', function() {
+      log('📄 页面加载完成');
+      log('🎯 复制功能测试已准备就绪');
+      log('📋 可以测试两种不同的复制功能');
+      log('---');
+    });
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

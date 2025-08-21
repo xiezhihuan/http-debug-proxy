@@ -78,4 +78,38 @@ class HttpService {
       return false;
     }
   }
+
+  Future<Map<String, dynamic>> replayRequest({
+    required String originalLogId,
+    required String method,
+    required String url,
+    required Map<String, String> headers,
+    required String body,
+  }) async {
+    try {
+      final requestData = {
+        'original_log_id': originalLogId,
+        'method': method,
+        'url': url,
+        'headers': headers,
+        'body': body,
+      };
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/api/replay'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        throw Exception('重放请求失败: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('重放请求错误: $e');
+      rethrow;
+    }
+  }
 } 

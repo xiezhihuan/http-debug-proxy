@@ -86,7 +86,7 @@ docker run -d \
   --name http-debug-proxy \
   -p 8080:8080 \
   -p 8091:8091 \
-  -e TARGET_URL="http://192.168.100.220:8081" \
+  -e TARGET_URL="http://192.168.100.94:8079" \
   -e PROXY_PORT=8080 \
   -e WEB_PORT=8091 \
   -e MAX_LOGS=1000 \
