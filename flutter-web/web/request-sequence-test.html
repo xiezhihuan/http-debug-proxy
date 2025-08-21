@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>请求编排功能测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .feature-card h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .highlight strong {
+            color: #856404;
+        }
+        .demo-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .demo-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+        .sequence-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .sequence-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+        }
+        .sequence-item:last-child {
+            border-bottom: none;
+        }
+        .sequence-number {
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .sequence-info {
+            flex: 1;
+        }
+        .sequence-method {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .sequence-url {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .sequence-description {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        .sequence-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .sequence-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        .progress-section {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .progress-text {
+            text-align: center;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 请求编排功能演示</h1>
+            <p>支持多个HTTP请求的序列化重放和循环执行</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>✨ 功能特性</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>🎯 请求序列编排</h3>
+                        <p>支持添加多个不同的HTTP请求，按顺序执行。每个请求可以设置不同的URL、方法和描述。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔄 循环执行</h3>
+                        <p>整个请求序列可以重复执行指定的次数，支持1-1000次的循环范围。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📊 实时进度</h3>
+                        <p>显示当前执行轮次和请求序号，提供进度条和详细的状态信息。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>⏹️ 执行控制</h3>
+                        <p>支持取消正在执行的序列，提供完整的执行控制能力。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📈 结果统计</h3>
+                        <p>执行完成后显示详细的统计信息，包括成功率、失败次数等。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔧 灵活配置</h3>
+                        <p>支持编辑和删除序列中的请求，动态调整执行计划。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>💡 使用场景</h2>
+                <div class="highlight">
+                    <strong>API测试流程：</strong> 测试完整的业务流程，如登录 → 查询 → 操作 → 登出
+                </div>
+                <div class="highlight">
+                    <strong>性能测试：</strong> 模拟真实的用户操作序列，测试系统性能
+                </div>
+                <div class="highlight">
+                    <strong>集成测试：</strong> 验证多个API接口的协作和依赖关系
+                </div>
+                <div class="highlight">
+                    <strong>回归测试：</strong> 重复执行特定的测试场景，确保系统稳定性
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎮 功能演示</h2>
+                <div class="demo-section">
+                    <h3>请求序列管理</h3>
+                    <div class="demo-controls">
+                        <button class="btn-primary" onclick="addSampleSequence()">添加示例序列</button>
+                        <button class="btn-success" onclick="addCustomRequest()">添加自定义请求</button>
+                        <button class="btn-warning" onclick="clearSequence()">清空序列</button>
+                    </div>
+
+                    <div class="sequence-list" id="sequenceList">
+                        <div class="empty-state">
+                            <div>📝</div>
+                            <div>暂无请求序列</div>
+                            <div style="font-size: 12px; margin-top: 5px;">点击上方按钮添加请求到序列中</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <label for="roundsInput">序列重复次数：</label>
+                        <input type="number" id="roundsInput" value="100" min="1" max="1000" style="margin-left: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+
+                    <div class="demo-controls" style="margin-top: 20px;">
+                        <button class="btn-success" onclick="startExecution()">开始执行序列</button>
+                        <button class="btn-warning" onclick="stopExecution()" id="stopBtn" disabled>停止执行</button>
+                    </div>
+                </div>
+
+                <div class="progress-section" id="progressSection" style="display: none;">
+                    <h3>执行进度</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">准备开始执行...</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="currentRound">0</div>
+                            <div class="stat-label">当前轮次</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="currentRequest">0</div>
+                            <div class="stat-label">当前请求</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRounds">100</div>
+                            <div class="stat-label">总轮次</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRequests">0</div>
+                            <div class="stat-label">总请求数</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 技术实现</h2>
+                <div class="code-block">
+// 请求序列数据结构
+class RequestSequence {
+  final String url;
+  final String method;
+  final String description;
+  
+  RequestSequence({
+    required this.url,
+    required this.method,
+    required this.description,
+  });
+}
+
+// 执行状态管理
+class ExecutionState {
+  bool isExecuting = false;
+  int currentRound = 0;
+  int currentSequence = 0;
+  int totalRounds = 100;
+  List<RequestSequence> sequence = [];
+  bool canCancel = true;
+}
+
+// 序列执行逻辑
+Future<void> executeRequestSequence() async {
+  for (int round = 0; round < totalRounds; round++) {
+    if (!canCancel) break;
+    
+    currentRound = round + 1;
+    
+    for (int seqIndex = 0; seqIndex < sequence.length; seqIndex++) {
+      if (!canCancel) break;
+      
+      currentSequence = seqIndex + 1;
+      
+      // 执行单个请求
+      await executeSingleRequest(sequence[seqIndex]);
+      
+      // 添加延迟避免过快请求
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+  }
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        let requestSequence = [];
+        let isExecuting = false;
+        let currentRound = 0;
+        let currentSequence = 0;
+        let totalRounds = 100;
+        let executionInterval = null;
+
+        // 添加示例序列
+        function addSampleSequence() {
+            const sampleRequests = [
+                {
+                    url: 'https://api.example.com/auth/login',
+                    method: 'POST',
+                    description: '用户登录'
+                },
+                {
+                    url: 'https://api.example.com/user/profile',
+                    method: 'GET',
+                    description: '获取用户信息'
+                },
+                {
+                    url: 'https://api.example.com/user/settings',
+                    method: 'PUT',
+                    description: '更新用户设置'
+                },
+                {
+                    url: 'https://api.example.com/auth/logout',
+                    method: 'POST',
+                    description: '用户登出'
+                }
+            ];
+
+            requestSequence = sampleRequests;
+            updateSequenceDisplay();
+            updateStats();
+        }
+
+        // 添加自定义请求
+        function addCustomRequest() {
+            const url = prompt('请输入请求URL:');
+            if (!url) return;
+
+            const method = prompt('请输入HTTP方法 (GET/POST/PUT/DELETE):', 'GET');
+            if (!method) return;
+
+            const description = prompt('请输入请求描述 (可选):');
+
+            requestSequence.push({
+                url: url,
+                method: method.toUpperCase(),
+                description: description || ''
+            });
+
+            updateSequenceDisplay();
+            updateStats();
+        }
+
+        // 清空序列
+        function clearSequence() {
+            if (confirm('确定要清空所有请求序列吗？')) {
+                requestSequence = [];
+                updateSequenceDisplay();
+                updateStats();
+            }
+        }
+
+        // 更新序列显示
+        function updateSequenceDisplay() {
+            const container = document.getElementById('sequenceList');
+            
+            if (requestSequence.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>📝</div>
+                        <div>暂无请求序列</div>
+                        <div style="font-size: 12px; margin-top: 5px;">点击上方按钮添加请求到序列中</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = requestSequence.map((request, index) => `
+                <div class="sequence-item">
+                    <div class="sequence-number">${index + 1}</div>
+                    <div class="sequence-info">
+                        <div class="sequence-method">${request.method}</div>
+                        <div class="sequence-url">${request.url}</div>
+                        ${request.description ? `<div class="sequence-description">${request.description}</div>` : ''}
+                    </div>
+                    <div class="sequence-actions">
+                        <button class="btn-edit" onclick="editRequest(${index})">编辑</button>
+                        <button class="btn-delete" onclick="deleteRequest(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 编辑请求
+        function editRequest(index) {
+            const request = requestSequence[index];
+            
+            const url = prompt('请输入新的URL:', request.url);
+            if (!url) return;
+
+            const method = prompt('请输入新的HTTP方法:', request.method);
+            if (!method) return;
+
+            const description = prompt('请输入新的描述:', request.description);
+
+            requestSequence[index] = {
+                url: url,
+                method: method.toUpperCase(),
+                description: description || ''
+            };
+
+            updateSequenceDisplay();
+        }
+
+        // 删除请求
+        function deleteRequest(index) {
+            if (confirm(`确定要删除请求 ${index + 1} 吗？`)) {
+                requestSequence.splice(index, 1);
+                updateSequenceDisplay();
+                updateStats();
+            }
+        }
+
+        // 开始执行
+        function startExecution() {
+            if (requestSequence.length === 0) {
+                alert('请先添加请求到序列中');
+                return;
+            }
+
+            totalRounds = parseInt(document.getElementById('roundsInput').value) || 100;
+            if (totalRounds < 1 || totalRounds > 1000) {
+                alert('请输入有效的重复次数（1-1000）');
+                return;
+            }
+
+            isExecuting = true;
+            currentRound = 0;
+            currentSequence = 0;
+
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('progressSection').style.display = 'block';
+
+            // 模拟执行过程
+            executionInterval = setInterval(() => {
+                if (currentSequence < requestSequence.length) {
+                    currentSequence++;
+                } else {
+                    currentRound++;
+                    currentSequence = 1;
+                }
+
+                if (currentRound > totalRounds) {
+                    stopExecution();
+                    alert('序列执行完成！');
+                    return;
+                }
+
+                updateProgress();
+            }, 100);
+        }
+
+        // 停止执行
+        function stopExecution() {
+            isExecuting = false;
+            clearInterval(executionInterval);
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('progressSection').style.display = 'none';
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const progress = (currentRound - 1 + currentSequence / requestSequence.length) / totalRounds;
+            document.getElementById('progressFill').style.width = (progress * 100) + '%';
+            
+            document.getElementById('currentRound').textContent = currentRound;
+            document.getElementById('currentRequest').textContent = currentSequence;
+            document.getElementById('totalRounds').textContent = totalRounds;
+            document.getElementById('totalRequests').textContent = requestSequence.length;
+            
+            document.getElementById('progressText').textContent = 
+                `正在执行第 ${currentRound} / ${totalRounds} 轮，第 ${currentSequence} / ${requestSequence.length} 个请求`;
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalRequests').textContent = requestSequence.length;
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+    </script>
+</body>
+</html>

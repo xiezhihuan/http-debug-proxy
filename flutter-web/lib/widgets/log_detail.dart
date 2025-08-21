@@ -8,8 +8,9 @@ import 'replay_dialog.dart';
 
 class LogDetail extends StatefulWidget {
   final HttpLog? log;
+  final List<HttpLog> allHttpLogs;
 
-  const LogDetail({Key? key, this.log}) : super(key: key);
+  const LogDetail({Key? key, this.log, this.allHttpLogs = const []}) : super(key: key);
 
   @override
   _LogDetailState createState() => _LogDetailState();
@@ -934,7 +935,10 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
     // 显示重放请求对话框
     showDialog(
       context: context,
-      builder: (context) => ReplayDialog(originalLog: widget.log!),
+      builder: (context) => ReplayDialog(
+        originalLog: widget.log!,
+        allHttpLogs: widget.allHttpLogs,
+      ),
     );
   }
 

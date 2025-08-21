@@ -177,6 +177,7 @@ class _LogListState extends State<LogList> {
                       final log = widget.logs[widget.logs.length - 1 - index]; // 最新的在上面
                       return LogTile(
                         log: log,
+                        allLogs: widget.logs,
                         onTap: () => widget.onLogSelected(log),
                         isSelected: widget.selectedLog?.id == log.id, // 通过ID比较判断是否选中
                       );
@@ -191,12 +192,14 @@ class _LogListState extends State<LogList> {
 
 class LogTile extends StatelessWidget {
   final HttpLog log;
+  final List<HttpLog> allLogs;
   final VoidCallback onTap;
   final bool isSelected;
 
   const LogTile({
     Key? key,
     required this.log,
+    required this.allLogs,
     required this.onTap,
     required this.isSelected,
   }) : super(key: key);
@@ -280,7 +283,10 @@ class LogTile extends StatelessWidget {
             Future.delayed(Duration(milliseconds: 100), () {
               showDialog(
                 context: context,
-                builder: (context) => ReplayDialog(originalLog: log),
+                builder: (context) => ReplayDialog(
+                  originalLog: log,
+                  allHttpLogs: allLogs,
+                ),
               );
             });
           },

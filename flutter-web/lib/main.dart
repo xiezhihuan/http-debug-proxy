@@ -254,7 +254,10 @@ class _MainScreenState extends State<MainScreen> {
               // 右侧：日志详情（占满右边）
               Expanded(
                 flex: 2,
-                child: LogDetail(log: _selectedLog),
+                child: LogDetail(
+                  log: _selectedLog,
+                  allHttpLogs: _allLogs,
+                ),
               ),
             ],
           ),

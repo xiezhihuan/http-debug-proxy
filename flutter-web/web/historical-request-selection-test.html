@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史请求选择功能测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .section h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .feature-card h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .highlight strong {
+            color: #856404;
+        }
+        .demo-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        .request-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .request-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .request-item:hover {
+            background: #f8f9fa;
+        }
+        .request-item:last-child {
+            border-bottom: none;
+        }
+        .request-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .method-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        .method-get { background: #4caf50; }
+        .method-post { background: #2196f3; }
+        .method-put { background: #ff9800; }
+        .method-delete { background: #f44336; }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        .status-2xx { background: #4caf50; }
+        .status-3xx { background: #2196f3; }
+        .status-4xx { background: #ff9800; }
+        .status-5xx { background: #f44336; }
+        
+        .request-info {
+            flex: 1;
+        }
+        .request-url {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .request-details {
+            font-size: 12px;
+            color: #666;
+        }
+        .request-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .selected-info {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .selected-info h4 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            width: 100px;
+            font-weight: 500;
+            color: #666;
+        }
+        .detail-value {
+            flex: 1;
+            font-family: monospace;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filter-bar select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 历史请求选择功能演示</h1>
+            <p>从HTTP请求日志列表中选择请求并添加到序列编排</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>✨ 功能特性</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>🎯 真实数据源</h3>
+                        <p>直接从左侧"HTTP请求日志"列表中获取真实的HTTP请求数据，无需手动输入。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔍 搜索过滤</h3>
+                        <p>支持按URL、方法类型进行搜索和过滤，快速找到需要的请求。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📝 完整信息</h3>
+                        <p>自动复制请求的完整信息，包括URL、方法、头部、请求体等所有详细数据。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>✏️ 描述编辑</h3>
+                        <p>允许用户为选中的请求添加或修改描述信息，便于序列管理。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>⏰ 时间排序</h3>
+                        <p>按时间倒序显示，最新的请求在前面，更符合用户使用习惯。</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>👁️ 详情预览</h3>
+                        <p>支持查看请求的详细信息，包括请求头、请求体的完整内容。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>💡 使用流程</h2>
+                <div class="highlight">
+                    <strong>步骤1：</strong> 在请求序列编排中点击"添加请求"按钮
+                </div>
+                <div class="highlight">
+                    <strong>步骤2：</strong> 从弹出的历史请求列表中浏览和搜索
+                </div>
+                <div class="highlight">
+                    <strong>步骤3：</strong> 点击"查看详情"预览请求的完整信息
+                </div>
+                <div class="highlight">
+                    <strong>步骤4：</strong> 点击"添加到序列"选择请求
+                </div>
+                <div class="highlight">
+                    <strong>步骤5：</strong> 编辑请求描述并确认添加
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎮 功能演示</h2>
+                <div class="demo-section">
+                    <h3>模拟历史请求列表</h3>
+                    <div class="filter-bar">
+                        <input type="text" class="search-box" placeholder="搜索请求URL或关键词..." oninput="filterRequests()">
+                        <label>方法过滤：</label>
+                        <select onchange="filterRequests()">
+                            <option value="">所有方法</option>
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+
+                    <div class="request-list" id="requestList">
+                        <!-- 请求列表将通过JavaScript动态生成 -->
+                    </div>
+
+                    <div id="selectedInfo" class="selected-info" style="display: none;">
+                        <h4>已选择的请求</h4>
+                        <div id="selectedDetails"></div>
+                        <button class="btn btn-success" onclick="addToSequence()">添加到序列</button>
+                        <button class="btn btn-primary" onclick="viewDetails()">查看详情</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔧 技术实现</h2>
+                <div class="code-block">
+// 从真实HTTP日志获取数据
+Widget _buildRequestSelectionList() {
+  final httpLogs = widget.allHttpLogs;
+  
+  if (httpLogs.isEmpty) {
+    return _buildEmptyState();
+  }
+
+  // 按时间倒序排列，最新的请求在前面
+  final sortedLogs = List&lt;HttpLog&gt;.from(httpLogs)
+    ..sort((a, b) =&gt; b.timestamp.compareTo(a.timestamp));
+
+  return ListView.builder(
+    itemCount: sortedLogs.length,
+    itemBuilder: (context, index) {
+      final log = sortedLogs[index];
+      return _buildRequestSelectionItem(log);
+    },
+  );
+}
+
+// 添加选中的请求到序列
+void _addSelectedRequestToSequence(HttpLog log) {
+  // 转换请求头格式
+  final headersMap = &lt;String, String&gt;{};
+  log.requestHeaders.forEach((key, values) {
+    headersMap[key] = values.join(', ');
+  });
+  
+  // 添加到序列
+  setState(() {
+    _requestSequence.add({
+      'url': log.url,
+      'method': log.method,
+      'description': descriptionController.text,
+      'requestHeaders': headersMap,
+      'requestBody': log.requestBody,
+    });
+  });
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟HTTP请求数据
+        const mockRequests = [
+            {
+                id: '1',
+                method: 'POST',
+                url: 'https://api.example.com/auth/login',
+                statusCode: 200,
+                timestamp: new Date(Date.now() - 5 * 60 * 1000),
+                requestHeaders: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer token123'
+                },
+                requestBody: '{"username": "user@example.com", "password": "password123"}'
+            },
+            {
+                id: '2',
+                method: 'GET',
+                url: 'https://api.example.com/user/profile',
+                statusCode: 200,
+                timestamp: new Date(Date.now() - 3 * 60 * 1000),
+                requestHeaders: {
+                    'Authorization': 'Bearer token123',
+                    'Accept': 'application/json'
+                },
+                requestBody: ''
+            },
+            {
+                id: '3',
+                method: 'PUT',
+                url: 'https://api.example.com/user/settings',
+                statusCode: 200,
+                timestamp: new Date(Date.now() - 1 * 60 * 1000),
+                requestHeaders: {
+                    'Authorization': 'Bearer token123',
+                    'Content-Type': 'application/json'
+                },
+                requestBody: '{"theme": "dark", "notifications": true, "language": "zh-CN"}'
+            },
+            {
+                id: '4',
+                method: 'DELETE',
+                url: 'https://api.example.com/user/session',
+                statusCode: 204,
+                timestamp: new Date(Date.now() - 30 * 1000),
+                requestHeaders: {
+                    'Authorization': 'Bearer token123'
+                },
+                requestBody: ''
+            },
+            {
+                id: '5',
+                method: 'POST',
+                url: 'https://api.example.com/upload/image',
+                statusCode: 201,
+                timestamp: new Date(Date.now() - 10 * 60 * 1000),
+                requestHeaders: {
+                    'Authorization': 'Bearer token123',
+                    'Content-Type': 'multipart/form-data'
+                },
+                requestBody: 'Binary data: image file'
+            }
+        ];
+
+        let selectedRequest = null;
+        let filteredRequests = [...mockRequests];
+
+        // 初始化页面
+        function init() {
+            renderRequestList();
+        }
+
+        // 渲染请求列表
+        function renderRequestList() {
+            const container = document.getElementById('requestList');
+            
+            if (filteredRequests.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+                        <div>暂无匹配的HTTP请求记录</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredRequests.map(request => `
+                <div class="request-item ${selectedRequest?.id === request.id ? 'selected' : ''}" 
+                     onclick="selectRequest('${request.id}')">
+                    <span class="method-badge method-${request.method.toLowerCase()}">${request.method}</span>
+                    <span class="status-badge status-${Math.floor(request.statusCode / 100)}xx">${request.statusCode}</span>
+                    <div class="request-info">
+                        <div class="request-url">${request.url}</div>
+                        <div class="request-details">
+                            请求头: ${Object.keys(request.requestHeaders).length} 个 • 
+                            请求体: ${request.requestBody.length > 0 ? request.requestBody.length + ' 字符' : '无'}
+                        </div>
+                    </div>
+                    <div class="request-time">${formatTime(request.timestamp)}</div>
+                </div>
+            `).join('');
+        }
+
+        // 选择请求
+        function selectRequest(requestId) {
+            selectedRequest = mockRequests.find(r => r.id === requestId);
+            renderRequestList();
+            showSelectedInfo();
+        }
+
+        // 显示选中的请求信息
+        function showSelectedInfo() {
+            const infoDiv = document.getElementById('selectedInfo');
+            const detailsDiv = document.getElementById('selectedDetails');
+            
+            if (!selectedRequest) {
+                infoDiv.style.display = 'none';
+                return;
+            }
+
+            infoDiv.style.display = 'block';
+            detailsDiv.innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">请求方法:</div>
+                    <div class="detail-value">${selectedRequest.method}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">请求URL:</div>
+                    <div class="detail-value">${selectedRequest.url}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">状态码:</div>
+                    <div class="detail-value">${selectedRequest.statusCode}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">时间:</div>
+                    <div class="detail-value">${selectedRequest.timestamp.toLocaleString()}</div>
+                </div>
+            `;
+        }
+
+        // 过滤请求
+        function filterRequests() {
+            const searchText = document.querySelector('.search-box').value.toLowerCase();
+            const methodFilter = document.querySelector('select').value;
+            
+            filteredRequests = mockRequests.filter(request => {
+                const matchesSearch = !searchText || 
+                    request.url.toLowerCase().includes(searchText) ||
+                    request.method.toLowerCase().includes(searchText);
+                
+                const matchesMethod = !methodFilter || request.method === methodFilter;
+                
+                return matchesSearch && matchesMethod;
+            });
+            
+            renderRequestList();
+        }
+
+        // 添加到序列
+        function addToSequence() {
+            if (!selectedRequest) return;
+            
+            const description = prompt('请为这个请求添加描述信息（可选）：', '');
+            if (description !== null) {
+                alert(`已将请求添加到序列：\n${selectedRequest.method} ${selectedRequest.url}\n描述：${description || '无'}`);
+                selectedRequest = null;
+                showSelectedInfo();
+                renderRequestList();
+            }
+        }
+
+        // 查看详情
+        function viewDetails() {
+            if (!selectedRequest) return;
+            
+            const details = `
+请求详情：
+方法: ${selectedRequest.method}
+URL: ${selectedRequest.url}
+状态码: ${selectedRequest.statusCode}
+时间: ${selectedRequest.timestamp.toLocaleString()}
+
+请求头:
+${Object.entries(selectedRequest.requestHeaders).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+
+请求体:
+${selectedRequest.requestBody || '(无)'}
+            `;
+            
+            alert(details);
+        }
+
+        // 格式化时间
+        function formatTime(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / (1000 * 60));
+            
+            if (minutes < 1) return '刚刚';
+            if (minutes < 60) return `${minutes}分钟前`;
+            
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}小时前`;
+            
+            return timestamp.toLocaleString();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
