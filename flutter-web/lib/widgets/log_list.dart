@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/http_log.dart';
-import 'context_menu.dart';
 import 'replay_dialog.dart';
+import 'request_sequence_dialog.dart';
 
 class LogList extends StatefulWidget {
   final List<HttpLog> logs;
@@ -28,6 +28,15 @@ class LogList extends StatefulWidget {
 }
 
 class _LogListState extends State<LogList> {
+  void _openRequestSequenceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => RequestSequenceDialog(
+        allHttpLogs: widget.logs,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -91,6 +100,44 @@ class _LogListState extends State<LogList> {
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: widget.isListening ? Colors.green.shade700 : Colors.red.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                // 请求编排按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.purple.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: _openRequestSequenceDialog,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.playlist_play,
+                            size: 16,
+                            color: Colors.purple.shade700,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '请求编排',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.purple.shade700,
                             ),
                           ),
                         ],
@@ -286,6 +333,25 @@ class LogTile extends StatelessWidget {
                 builder: (context) => ReplayDialog(
                   originalLog: log,
                   allHttpLogs: allLogs,
+                ),
+              );
+            });
+          },
+        ),
+        PopupMenuItem(
+          child: ListTile(
+            leading: Icon(Icons.playlist_play, color: Colors.purple),
+            title: Text('请求编排'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          onTap: () {
+            // 延迟执行，避免菜单关闭动画冲突
+            Future.delayed(Duration(milliseconds: 100), () {
+              showDialog(
+                context: context,
+                builder: (context) => RequestSequenceDialog(
+                  allHttpLogs: allLogs,
+                  initialLog: log,
                 ),
               );
             });

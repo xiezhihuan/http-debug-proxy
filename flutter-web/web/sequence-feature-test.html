@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>请求编排功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .feature-title {
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .feature-content {
+            color: #6c757d;
+        }
+        .step-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .step-list li {
+            background: #e3f2fd;
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .old-feature {
+            background: #ffebee;
+        }
+        .new-feature {
+            background: #e8f5e8;
+        }
+        .test-section {
+            background: #f0f8ff;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎭 请求编排功能测试</h1>
+        <p>HTTP调试代理 - 独立的请求编排功能演示</p>
+    </div>
+
+    <div class="highlight">
+        <h3>✨ 功能改进说明</h3>
+        <p>
+            <strong>请求编排功能已从重放对话框中独立出来，现在作为一个专门的功能模块！</strong>
+            <br>这使得功能更加清晰，用户体验更加友好。
+        </p>
+    </div>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>对比项</th>
+                <th class="old-feature">之前：混合在重放对话框</th>
+                <th class="new-feature">现在：独立的请求编排</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>功能入口</strong></td>
+                <td class="old-feature">重放对话框内的单选按钮</td>
+                <td class="new-feature">专门的"请求编排"按钮 + 右键菜单选项</td>
+            </tr>
+            <tr>
+                <td><strong>界面设计</strong></td>
+                <td class="old-feature">与单请求重放功能混杂</td>
+                <td class="new-feature">专门的请求编排界面，更大更清晰</td>
+            </tr>
+            <tr>
+                <td><strong>用户体验</strong></td>
+                <td class="old-feature">需要先选择模式，容易混淆</td>
+                <td class="new-feature">直接进入编排界面，目标明确</td>
+            </tr>
+            <tr>
+                <td><strong>功能复杂度</strong></td>
+                <td class="old-feature">功能耦合，代码复杂</td>
+                <td class="new-feature">功能独立，各司其职</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">🎯</span>
+                独立入口
+            </h3>
+            <div class="feature-content">
+                <p><strong>两个便捷入口：</strong></p>
+                <ol class="step-list">
+                    <li>HTTP请求日志列表头部的"请求编排"按钮</li>
+                    <li>右键点击任意请求 → "请求编排"选项</li>
+                </ol>
+                <p>不再需要在重放对话框中选择模式，直接访问编排功能！</p>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">🎨</span>
+                专门界面
+            </h3>
+            <div class="feature-content">
+                <p><strong>左右分栏布局：</strong></p>
+                <ul class="step-list">
+                    <li><strong>左侧：</strong>请求序列管理面板</li>
+                    <li><strong>右侧：</strong>历史请求选择面板</li>
+                    <li><strong>底部：</strong>执行控制和进度显示</li>
+                </ul>
+                <p>界面更大（1200x800），操作空间充足！</p>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">📋</span>
+                序列管理
+            </h3>
+            <div class="feature-content">
+                <p><strong>可视化序列管理：</strong></p>
+                <ul class="step-list">
+                    <li>序列项目显示：方法、URL、描述</li>
+                    <li>拖拽排序（未来功能）</li>
+                    <li>编辑/删除序列中的请求</li>
+                    <li>设置序列重复次数</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">🔍</span>
+                历史选择
+            </h3>
+            <div class="feature-content">
+                <p><strong>从历史请求中选择：</strong></p>
+                <ul class="step-list">
+                    <li>按时间倒序显示所有历史请求</li>
+                    <li>显示方法、状态码、URL、时间</li>
+                    <li>查看详情、添加到序列</li>
+                    <li>复制完整请求信息（头部、请求体）</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">⚡</span>
+                执行控制
+            </h3>
+            <div class="feature-content">
+                <p><strong>强大的执行控制：</strong></p>
+                <ul class="step-list">
+                    <li>设置序列重复次数（1-1000）</li>
+                    <li>实时进度显示</li>
+                    <li>取消执行功能</li>
+                    <li>详细统计报告</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <h3 class="feature-title">
+                <span class="icon">🧹</span>
+                简化重放
+            </h3>
+            <div class="feature-content">
+                <p><strong>重放对话框现在更简洁：</strong></p>
+                <ul class="step-list">
+                    <li>专注于单请求重放功能</li>
+                    <li>移除序列编排相关代码</li>
+                    <li>界面更清爽，操作更直观</li>
+                    <li>降低了功能复杂度</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 测试步骤</h3>
+        <ol>
+            <li><strong>准备测试环境：</strong>
+                <ul>
+                    <li>确保 Flutter Web 应用运行在 http://localhost:8092</li>
+                    <li>确保代理服务器运行正常</li>
+                </ul>
+            </li>
+            <li><strong>生成测试数据：</strong>
+                <ul>
+                    <li>通过代理发送一些HTTP请求，生成历史记录</li>
+                    <li>建议包含不同类型的请求（GET、POST等）</li>
+                </ul>
+            </li>
+            <li><strong>测试独立入口：</strong>
+                <ul>
+                    <li>点击"HTTP请求日志"头部的"请求编排"按钮</li>
+                    <li>右键点击任意请求，选择"请求编排"</li>
+                </ul>
+            </li>
+            <li><strong>测试编排功能：</strong>
+                <ul>
+                    <li>从历史请求中选择并添加到序列</li>
+                    <li>编辑请求描述</li>
+                    <li>设置重复次数并执行</li>
+                    <li>观察执行进度和结果统计</li>
+                </ul>
+            </li>
+            <li><strong>测试简化重放：</strong>
+                <ul>
+                    <li>点击重放按钮，确认界面更简洁</li>
+                    <li>验证单请求重放功能正常</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="highlight">
+        <h3>🎉 预期结果</h3>
+        <ul>
+            <li>✅ "请求编排"按钮出现在HTTP请求日志列表头部</li>
+            <li>✅ 右键菜单包含"请求编排"选项</li>
+            <li>✅ 请求编排界面独立、清晰、功能完整</li>
+            <li>✅ 可以从历史请求中选择并创建序列</li>
+            <li>✅ 序列执行功能正常，包含进度显示和统计</li>
+            <li>✅ 重放对话框变得更简洁，专注于单请求功能</li>
+            <li>✅ 两个功能完全独立，互不干扰</li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center; color: #6c757d;">
+        <p>🚀 功能重构完成！更清晰的功能划分，更好的用户体验！</p>
+    </div>
+</body>
+</html>
