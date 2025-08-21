@@ -61,6 +61,11 @@
       background-color: #e8f5e8;
     }
     
+    .button-card.copy-curl {
+      border-color: #fd7e14;
+      background-color: #fff3e0;
+    }
+    
     .button-card.copy-full {
       border-color: #6c757d;
       background-color: #f8f9fa;
@@ -103,6 +108,17 @@
     .button-demo.replay:hover {
       background-color: #218838;
       border-color: #218838;
+    }
+    
+    .button-demo.copy-curl {
+      background-color: #fd7e14;
+      color: white;
+      border: 1px solid #fd7e14;
+    }
+    
+    .button-demo.copy-curl:hover {
+      background-color: #e55a00;
+      border-color: #e55a00;
     }
     
     .button-demo.copy-full {
@@ -222,6 +238,12 @@
       border-color: #28a745;
     }
     
+    .mock-button.copy-curl {
+      background-color: #fff3e0;
+      color: #fd7e14;
+      border-color: #fd7e14;
+    }
+    
     .mock-button.copy-full {
       background-color: #f8f9fa;
       color: #6c757d;
@@ -239,7 +261,7 @@
     <h1>🔄 重放按钮功能展示</h1>
     
     <div class="status success">
-      ✅ 功能说明：在请求详情页面的头部区域添加了重放请求按钮，与复制URL和复制完整详情按钮并列显示
+      ✅ 功能说明：在请求详情页面的头部区域现在包含四个功能按钮：复制URL、重放请求、复制为curl、复制完整详情
     </div>
     
     <div class="demo-section">
@@ -265,6 +287,16 @@
           <p><small>适用于：调试、测试、重复操作等</small></p>
         </div>
         
+        <div class="button-card copy-curl">
+          <h4>复制为curl</h4>
+          <div class="button-demo copy-curl">
+            <span class="icon"></span>
+            复制为curl
+          </div>
+          <p><small>生成标准的curl命令</small></p>
+          <p><small>适用于：命令行调试、脚本化等</small></p>
+        </div>
+        
         <div class="button-card copy-full">
           <h4>📋 复制完整详情</h4>
           <div class="button-demo copy-full">
@@ -285,6 +317,7 @@
           <div class="mock-buttons">
             <div class="mock-button copy-url">🔗 复制URL</div>
             <div class="mock-button replay">🔄 重放请求</div>
+            <div class="mock-button copy-curl">复制为curl</div>
             <div class="mock-button copy-full">📋 复制完整详情</div>
           </div>
         </div>
@@ -299,9 +332,10 @@
           <h5>左侧：复制功能</h5>
           <ul>
             <li><strong>复制URL</strong>：快速复制请求地址</li>
+            <li><strong>复制为curl</strong>：生成标准curl命令</li>
             <li><strong>复制完整详情</strong>：复制所有请求信息</li>
             <li>操作简单，响应迅速</li>
-            <li>适用于信息获取和分享</li>
+            <li>适用于信息获取、命令行调试和分享</li>
           </ul>
         </div>
         
@@ -346,9 +380,9 @@
       <h3>✅ 功能特点：</h3>
       <ul>
         <li><strong>双重入口</strong>：右键菜单 + 详情页面，提供多种重放方式</li>
-        <li><strong>视觉一致性</strong>：三个按钮样式统一，颜色区分功能</li>
+        <li><strong>视觉一致性</strong>：四个按钮样式统一，颜色区分功能</li>
         <li><strong>操作便捷</strong>：在查看请求详情时可直接重放，无需返回列表</li>
-        <li><strong>功能完整</strong>：复制和重放功能覆盖所有使用场景</li>
+        <li><strong>功能完整</strong>：复制、重放和curl生成功能覆盖所有使用场景</li>
         <li><strong>用户体验</strong>：按钮布局合理，功能一目了然</li>
       </ul>
     </div>
@@ -396,6 +430,8 @@
           message = '复制URL功能：快速复制请求地址到剪贴板';
         } else if (this.classList.contains('replay')) {
           message = '重放请求功能：打开重放参数编辑窗口';
+        } else if (this.classList.contains('copy-curl')) {
+          message = '复制为curl功能：生成标准curl命令并复制到剪贴板';
         } else if (this.classList.contains('copy-full')) {
           message = '复制完整详情功能：复制所有请求信息到剪贴板';
         }

@@ -162,6 +162,44 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
                   ),
                 ),
                 SizedBox(width: 8),
+                // 复制为curl请求按钮
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.orange.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => _copyAsCurl(context),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.terminal,
+                            size: 14,
+                            color: Colors.orange.shade700,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '复制为curl',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.orange.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
                 IconButton(
                   icon: Icon(Icons.copy),
                   onPressed: () => _copyToClipboard(context),
@@ -897,6 +935,64 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => ReplayDialog(originalLog: widget.log!),
+    );
+  }
+
+  void _copyAsCurl(BuildContext context) {
+    if (widget.log == null) return;
+
+    final buffer = StringBuffer();
+    
+    // 构建curl命令
+    buffer.write('curl');
+    
+    // 添加HTTP方法（如果不是GET）
+    if (widget.log!.method.toUpperCase() != 'GET') {
+      buffer.write(' -X ${widget.log!.method.toUpperCase()}');
+    }
+    
+    // 添加URL
+    buffer.write(' "${widget.log!.url}"');
+    
+    // 添加请求头
+    widget.log!.requestHeaders.forEach((key, values) {
+      // 跳过一些不需要的头部
+      if (key.toLowerCase() != 'host' && 
+          key.toLowerCase() != 'content-length' &&
+          key.toLowerCase() != 'connection') {
+        final value = values.join(', ');
+        buffer.write(' \\\n  -H "$key: $value"');
+      }
+    });
+    
+    // 添加请求体（如果有的话）
+    if (widget.log!.requestBody.isNotEmpty) {
+      // 检查Content-Type
+      final contentType = widget.log!.requestHeaders['Content-Type']?.firstOrNull ?? '';
+      if (contentType.contains('application/json')) {
+        // JSON数据，使用-d参数
+        buffer.write(' \\\n  -d \'${widget.log!.requestBody}\'');
+      } else if (contentType.contains('application/x-www-form-urlencoded')) {
+        // 表单数据，使用-d参数
+        buffer.write(' \\\n  -d "${widget.log!.requestBody}"');
+      } else {
+        // 其他类型，使用--data-binary参数
+        buffer.write(' \\\n  --data-binary "${widget.log!.requestBody}"');
+      }
+    }
+    
+    // 添加换行符
+    buffer.write('\n');
+    
+    final curlCommand = buffer.toString();
+    Clipboard.setData(ClipboardData(text: curlCommand));
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('curl命令已复制到剪贴板'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 }
