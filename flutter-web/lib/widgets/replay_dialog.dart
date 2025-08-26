@@ -73,7 +73,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        width: 1000,
+        width: 1200, // 增加宽度以适应左右布局
         height: 800,
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -84,32 +84,25 @@ class _ReplayDialogState extends State<ReplayDialog> {
             
             const SizedBox(height: 24),
             
-            // 主要内容区域
+            // 主要内容区域 - 左右分栏
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 基本信息
-                    _buildSectionTitle('基本信息'),
-                    const SizedBox(height: 12),
-                    _buildBasicInfoSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // 请求头
-                    _buildSectionTitle('请求头'),
-                    const SizedBox(height: 12),
-                    _buildHeadersSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // 请求体
-                    _buildSectionTitle('请求体'),
-                    const SizedBox(height: 12),
-                    _buildBodySection(),
-                  ],
-                ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 左侧面板 - 基本信息和请求头
+                  Expanded(
+                    flex: 4, // 40%宽度
+                    child: _buildLeftPanel(),
+                  ),
+                  
+                  const SizedBox(width: 24),
+                  
+                  // 右侧面板 - 请求体
+                  Expanded(
+                    flex: 6, // 60%宽度
+                    child: _buildRightPanel(),
+                  ),
+                ],
               ),
             ),
             
@@ -120,6 +113,42 @@ class _ReplayDialogState extends State<ReplayDialog> {
           ],
         ),
       ),
+    );
+  }
+
+  // 左侧面板 - 基本信息和请求头
+  Widget _buildLeftPanel() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 基本信息
+          _buildSectionTitle('基本信息'),
+          const SizedBox(height: 12),
+          _buildBasicInfoSection(),
+          
+          const SizedBox(height: 24),
+          
+          // 请求头
+          _buildSectionTitle('请求头'),
+          const SizedBox(height: 12),
+          _buildHeadersSection(),
+        ],
+      ),
+    );
+  }
+
+  // 右侧面板 - 请求体
+  Widget _buildRightPanel() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('请求体'),
+        const SizedBox(height: 12),
+        Expanded(
+          child: _buildBodySection(),
+        ),
+      ],
     );
   }
 
@@ -331,17 +360,19 @@ class _ReplayDialogState extends State<ReplayDialog> {
             ),
           ),
           
-          // 请求头列表
+          // 请求头列表 - 紧凑布局
           Container(
-            height: 200,
-            padding: EdgeInsets.all(16),
+            constraints: BoxConstraints(
+              maxHeight: 300, // 限制最大高度
+            ),
+            padding: EdgeInsets.all(12),
             child: _headerControllers.isEmpty
                 ? Center(
                     child: Text(
-                      '暂无请求头，点击上方"添加"按钮添加',
+                      '暂无请求头',
                       style: TextStyle(
                         color: Colors.grey.shade500,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   )
@@ -349,50 +380,51 @@ class _ReplayDialogState extends State<ReplayDialog> {
                     child: Column(
                       children: _headerControllers.entries.map((entry) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextField(
-                                  controller: TextEditingController(text: entry.key),
-                                  decoration: InputDecoration(
-                                    labelText: '名称',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(4),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        entry.key,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                        ),
+                                      ),
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  ),
-                                  onChanged: (value) {
-                                    if (value != entry.key) {
-                                      final oldKey = entry.key;
-                                      final controller = _headerControllers.remove(oldKey)!;
-                                      _headerControllers[value] = controller;
-                                      setState(() {});
-                                    }
-                                  },
+                                    IconButton(
+                                      icon: Icon(Icons.delete, color: Colors.red, size: 16),
+                                      onPressed: () => _removeHeader(entry.key),
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(minWidth: 24, minHeight: 24),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 3,
-                                child: TextField(
+                                SizedBox(height: 4),
+                                TextField(
                                   controller: entry.value,
                                   decoration: InputDecoration(
-                                    labelText: '值',
+                                    hintText: '请求头值',
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                    isDense: true,
                                   ),
+                                  style: TextStyle(fontSize: 12),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _removeHeader(entry.key),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       }).toList(),
@@ -466,25 +498,28 @@ class _ReplayDialogState extends State<ReplayDialog> {
             ),
           ),
           
-          // 请求体输入区域
-          Container(
-            height: 200,
-            padding: EdgeInsets.all(16),
-            child: TextField(
-              controller: _bodyController,
-              maxLines: null,
-              expands: true,
-              decoration: InputDecoration(
-                hintText: '输入请求体内容...\n\n示例 JSON:\n{\n    "key": "value",\n    "number": 123,\n    "boolean": true\n}',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(4),
+          // 请求体输入区域 - 充满可用空间
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: TextField(
+                controller: _bodyController,
+                maxLines: null,
+                expands: true, // 充满容器高度
+                decoration: InputDecoration(
+                  hintText: '输入请求体内容...\n\n示例 JSON:\n{\n    "key": "value",\n    "number": 123,\n    "boolean": true\n}',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  contentPadding: EdgeInsets.all(12),
+                  alignLabelWithHint: true,
                 ),
-                contentPadding: EdgeInsets.all(12),
-                alignLabelWithHint: true,
-              ),
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 13,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  height: 1.4, // 设置行高，让文本更易读
+                ),
+                scrollPhysics: BouncingScrollPhysics(), // 添加弹性滚动
               ),
             ),
           ),
