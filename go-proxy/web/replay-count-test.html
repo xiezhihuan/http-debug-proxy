@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>重放次数功能测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .demo-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .feature-card {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .feature-card h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+    
+    .feature-card ul {
+      text-align: left;
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .feature-card li {
+      margin: 8px 0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .mock-dialog {
+      background-color: #f8f9fa;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .mock-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .mock-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-left: 8px;
+    }
+    
+    .mock-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    
+    .mock-section {
+      background-color: white;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .mock-section h5 {
+      margin: 0 0 12px 0;
+      color: #495057;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .mock-section h5::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .mock-section.basic h5::before { background-color: #007bff; }
+    .mock-section.headers h5::before { background-color: #28a745; }
+    .mock-section.body h5::before { background-color: #fd7e14; }
+    .mock-section.settings h5::before { background-color: #6c757d; }
+    
+    .mock-field {
+      margin-bottom: 12px;
+    }
+    
+    .mock-field label {
+      display: block;
+      font-size: 12px;
+      color: #6c757d;
+      margin-bottom: 4px;
+    }
+    
+    .mock-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    
+    .mock-radio-group {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .mock-radio {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    
+    .mock-radio input[type="radio"] {
+      margin: 0;
+    }
+    
+    .progress-section {
+      background-color: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .progress-title {
+      font-weight: 500;
+      color: #0056b3;
+      display: flex;
+      align-items: center;
+    }
+    
+    .progress-title::before {
+      content: 'ℹ️';
+      margin-right: 8px;
+    }
+    
+    .cancel-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .cancel-button:hover {
+      background-color: #c82333;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: #b3d9ff;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #0056b3;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+      text-align: center;
+      font-size: 13px;
+      color: #0056b3;
+    }
+    
+    .results-section {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .results-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .results-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-left: 8px;
+    }
+    
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .result-item {
+      background-color: white;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .result-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .result-label {
+      font-size: 12px;
+      color: #6c757d;
+    }
+    
+    .result-success { color: #28a745; }
+    .result-failure { color: #dc3545; }
+    .result-total { color: #007bff; }
+    .result-rate { color: #6c757d; }
+    
+    .detailed-results {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .result-entry {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .result-entry.success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .result-entry.failure {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .result-entry .icon {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+    
+    .result-entry.success .icon { color: #28a745; }
+    .result-entry.failure .icon { color: #dc3545; }
+    
+    .test-buttons {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    
+    .test-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .test-button:hover {
+      background-color: #0056b3;
+      transform: translateY(-1px);
+    }
+    
+    .test-button.sequential { background-color: #28a745; }
+    .test-button.sequential:hover { background-color: #218838; }
+    
+    .test-button.concurrent { background-color: #fd7e14; }
+    .test-button.concurrent:hover { background-color: #e55a00; }
+    
+    .test-button.large { background-color: #6c757d; }
+    .test-button.large:hover { background-color: #5a6268; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 重放次数功能测试</h1>
+    
+    <div class="status success">
+      ✅ 功能说明：重放请求现在支持设置重放次数（1-1000次），可选择顺序执行或并发执行，并提供进度指示和结果统计
+    </div>
+    
+    <div class="demo-section">
+      <h3>🎯 新增功能特点：</h3>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔢</div>
+          <h4>重放次数设置</h4>
+          <ul>
+            <li>支持1-1000次重放</li>
+            <li>数字输入框验证</li>
+            <li>默认值为1次</li>
+            <li>灵活的范围设置</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h4>执行方式选择</h4>
+          <ul>
+            <li>顺序执行：一次完成后再执行下一次</li>
+            <li>并发执行：同时执行多个请求</li>
+            <li>智能进度更新</li>
+            <li>性能优化选择</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h4>进度指示器</h4>
+          <ul>
+            <li>实时进度条显示</li>
+            <li>当前重放次数/总次数</li>
+            <li>取消重放功能</li>
+            <li>视觉反馈清晰</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h4>结果统计</h4>
+          <ul>
+            <li>成功/失败次数统计</li>
+            <li>成功率百分比</li>
+            <li>详细结果列表</li>
+            <li>日志ID记录</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>📱 模拟重放对话框界面：</h3>
+      <div class="mock-dialog">
+        <div class="mock-header">
+          <span>🔄</span>
+          <span class="mock-title">重放请求</span>
+        </div>
+        
+        <div class="mock-content">
+          <div class="mock-section basic">
+            <h5>基本信息</h5>
+            <div class="mock-field">
+              <label>请求 URL</label>
+              <input type="text" class="mock-input" value="https://api.example.com/users" readonly>
+            </div>
+            <div class="mock-field">
+              <label>HTTP 方法</label>
+              <input type="text" class="mock-input" value="POST" readonly>
+            </div>
+            <div class="mock-field">
+              <label>Content-Type</label>
+              <input type="text" class="mock-input" value="application/json" readonly>
+            </div>
+          </div>
+          
+          <div class="mock-section settings">
+            <h5>重放设置</h5>
+            <div class="mock-field">
+              <label>重放次数</label>
+              <input type="number" class="mock-input" value="10" min="1" max="1000">
+            </div>
+            <div class="mock-field">
+              <label>执行方式</label>
+              <div class="mock-radio-group">
+                <label class="mock-radio">
+                  <input type="radio" name="execution" value="sequential" checked>
+                  顺序执行
+                </label>
+                <label class="mock-radio">
+                  <input type="radio" name="execution" value="concurrent">
+                  并发执行
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mock-content">
+          <div class="mock-section headers">
+            <h5>请求头</h5>
+            <div class="mock-field">
+              <label>Authorization</label>
+              <input type="text" class="mock-input" value="Bearer token123" readonly>
+            </div>
+            <div class="mock-field">
+              <label>Accept</label>
+              <input type="text" class="mock-input" value="application/json" readonly>
+            </div>
+          </div>
+          
+          <div class="mock-section body">
+            <h5>请求体</h5>
+            <div class="mock-field">
+              <label>JSON 数据</label>
+              <textarea class="mock-input" rows="4" readonly>{
+  "name": "John Doe",
+  "email": "john@example.com"
+}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🧪 测试不同场景：</h3>
+      <div class="test-buttons">
+        <button class="test-button sequential" onclick="testSequential()">测试顺序执行</button>
+        <button class="test-button concurrent" onclick="testConcurrent()">测试并发执行</button>
+        <button class="test-button large" onclick="testLargeCount()">测试大量重放</button>
+      </div>
+      
+      <div id="progressSection" style="display: none;">
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-title">重放进度</span>
+            <button class="cancel-button" onclick="cancelReplay()">取消重放</button>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text" id="progressText">正在重放第 0 / 0 次</div>
+        </div>
+      </div>
+      
+      <div id="resultsSection" style="display: none;">
+        <div class="results-section">
+          <div class="results-header">
+            <span>📊</span>
+            <span class="results-title">重放结果统计</span>
+          </div>
+          
+          <div class="results-grid">
+            <div class="result-item">
+              <div class="result-value result-total" id="totalCount">0</div>
+              <div class="result-label">总重放次数</div>
+            </div>
+            <div class="result-item">
+              <div class="result-value result-success" id="successCount">0</div>
+              <div class="result-label">成功次数</div>
+            </div>
+            <div class="result-item">
+              <div class="result-value result-failure" id="failureCount">0</div>
+              <div class="result-label">失败次数</div>
+            </div>
+            <div class="result-item">
+              <div class="result-value result-rate" id="successRate">0.0%</div>
+              <div class="result-label">成功率</div>
+            </div>
+          </div>
+          
+          <div class="detailed-results" id="detailedResults"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>📚 使用场景：</h3>
+      <ul>
+        <li><strong>压力测试</strong>：测试API在高并发下的性能表现</li>
+        <li><strong>稳定性测试</strong>：验证API在多次请求下的稳定性</li>
+        <li><strong>性能基准</strong>：获取多次请求的平均响应时间和成功率</li>
+        <li><strong>故障重现</strong>：多次重放以重现偶发性问题</li>
+        <li><strong>负载测试</strong>：模拟真实的用户请求模式</li>
+        <li><strong>回归测试</strong>：验证修复后的功能是否稳定</li>
+      </ul>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🔍 技术实现细节：</h3>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>顺序执行</h4>
+          <ul>
+            <li>使用 for 循环顺序执行</li>
+            <li>每次执行后更新进度</li>
+            <li>支持取消操作</li>
+            <li>添加延迟避免过快请求</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h4>并发执行</h4>
+          <ul>
+            <li>使用 Future.wait 并发执行</li>
+            <li>实时更新进度状态</li>
+            <li>支持取消操作</li>
+            <li>性能更高但资源消耗大</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h4>进度管理</h4>
+          <ul>
+            <li>实时进度条更新</li>
+            <li>当前次数/总次数显示</li>
+            <li>取消按钮状态管理</li>
+            <li>结果收集和统计</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h4>结果展示</h4>
+          <ul>
+            <li>成功/失败次数统计</li>
+            <li>成功率百分比计算</li>
+            <li>详细结果列表展示</li>
+            <li>日志ID记录和显示</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentReplay = null;
+    let isReplaying = false;
+    
+    function testSequential() {
+      startReplay(10, false);
+    }
+    
+    function testConcurrent() {
+      startReplay(10, true);
+    }
+    
+    function testLargeCount() {
+      startReplay(50, false);
+    }
+    
+    function startReplay(count, concurrent) {
+      if (isReplaying) return;
+      
+      isReplaying = true;
+      currentReplay = {
+        count: count,
+        current: 0,
+        results: [],
+        concurrent: concurrent,
+        cancelled: false
+      };
+      
+      // 显示进度区域
+      document.getElementById('progressSection').style.display = 'block';
+      document.getElementById('resultsSection').style.display = 'none';
+      
+      if (concurrent) {
+        executeConcurrentReplay();
+      } else {
+        executeSequentialReplay();
+      }
+    }
+    
+    function executeSequentialReplay() {
+      const replay = currentReplay;
+      
+      function executeNext() {
+        if (replay.cancelled || replay.current >= replay.count) {
+          finishReplay();
+          return;
+        }
+        
+        replay.current++;
+        updateProgress();
+        
+        // 模拟请求执行
+        setTimeout(() => {
+          const success = Math.random() > 0.1; // 90% 成功率
+          replay.results.push({
+            index: replay.current,
+            success: success,
+            log_id: success ? `log_${Date.now()}_${replay.current}` : null,
+            error: success ? null : '模拟错误'
+          });
+          
+          executeNext();
+        }, 200);
+      }
+      
+      executeNext();
+    }
+    
+    function executeConcurrentReplay() {
+      const replay = currentReplay;
+      const promises = [];
+      
+      for (let i = 1; i <= replay.count; i++) {
+        const promise = new Promise((resolve) => {
+          setTimeout(() => {
+            const success = Math.random() > 0.1; // 90% 成功率
+            const result = {
+              index: i,
+              success: success,
+              log_id: success ? `log_${Date.now()}_${i}` : null,
+              error: success ? null : '模拟错误'
+            };
+            
+            replay.results.push(result);
+            replay.current++;
+            updateProgress();
+            
+            resolve(result);
+          }, Math.random() * 300 + 100); // 随机延迟
+        });
+        
+        promises.push(promise);
+      }
+      
+      Promise.all(promises).then(() => {
+        finishReplay();
+      });
+    }
+    
+    function updateProgress() {
+      const replay = currentReplay;
+      const progress = replay.current / replay.count;
+      
+      document.getElementById('progressFill').style.width = `${progress * 100}%`;
+      document.getElementById('progressText').textContent = `正在重放第 ${replay.current} / ${replay.count} 次`;
+    }
+    
+    function cancelReplay() {
+      if (currentReplay) {
+        currentReplay.cancelled = true;
+        document.getElementById('progressText').textContent = '正在取消重放...';
+      }
+    }
+    
+    function finishReplay() {
+      isReplaying = false;
+      const replay = currentReplay;
+      
+      // 隐藏进度区域
+      document.getElementById('progressSection').style.display = 'none';
+      
+      // 显示结果
+      showResults(replay.results);
+    }
+    
+    function showResults(results) {
+      const successCount = results.filter(r => r.success).length;
+      const failureCount = results.filter(r => !r.success).length;
+      const successRate = results.length > 0 ? (successCount / results.length * 100).toFixed(1) : '0.0';
+      
+      document.getElementById('totalCount').textContent = results.length;
+      document.getElementById('successCount').textContent = successCount;
+      document.getElementById('failureCount').textContent = failureCount;
+      document.getElementById('successRate').textContent = `${successRate}%`;
+      
+      // 显示详细结果
+      const detailedResults = document.getElementById('detailedResults');
+      detailedResults.innerHTML = results.map(result => {
+        const isSuccess = result.success;
+        return `
+          <div class="result-entry ${isSuccess ? 'success' : 'failure'}">
+            <span class="icon">${isSuccess ? '✅' : '❌'}</span>
+            <span>第${result.index}次: ${isSuccess ? '成功' : '失败'}</span>
+            ${isSuccess ? `<span style="margin-left: auto; color: #6c757d;">ID: ${result.log_id}</span>` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('resultsSection').style.display = 'block';
+    }
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

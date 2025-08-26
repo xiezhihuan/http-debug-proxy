@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>重放按钮功能展示</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .demo-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .demo-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .button-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .button-card {
+      padding: 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      text-align: center;
+    }
+    
+    .button-card.copy-url {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+    
+    .button-card.replay {
+      border-color: #28a745;
+      background-color: #e8f5e8;
+    }
+    
+    .button-card.copy-curl {
+      border-color: #fd7e14;
+      background-color: #fff3e0;
+    }
+    
+    .button-card.copy-full {
+      border-color: #6c757d;
+      background-color: #f8f9fa;
+    }
+    
+    .button-card h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .button-demo {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 10px 5px;
+    }
+    
+    .button-demo.copy-url {
+      background-color: #007bff;
+      color: white;
+      border: 1px solid #007bff;
+    }
+    
+    .button-demo.copy-url:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+    
+    .button-demo.replay {
+      background-color: #28a745;
+      color: white;
+      border: 1px solid #28a745;
+    }
+    
+    .button-demo.replay:hover {
+      background-color: #218838;
+      border-color: #218838;
+    }
+    
+    .button-demo.copy-curl {
+      background-color: #fd7e14;
+      color: white;
+      border: 1px solid #fd7e14;
+    }
+    
+    .button-demo.copy-curl:hover {
+      background-color: #e55a00;
+      border-color: #e55a00;
+    }
+    
+    .button-demo.copy-full {
+      background-color: #6c757d;
+      color: white;
+      border: 1px solid #6c757d;
+    }
+    
+    .button-demo.copy-full:hover {
+      background-color: #5a6268;
+      border-color: #5a6268;
+    }
+    
+    .button-demo .icon {
+      margin-right: 6px;
+      font-size: 14px;
+    }
+    
+    .feature-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .comparison-item {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background-color: white;
+    }
+    
+    .comparison-item h5 {
+      margin: 0 0 10px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    
+    .comparison-item h5::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .comparison-item.left h5::before {
+      background-color: #007bff;
+    }
+    
+    .comparison-item.right h5::before {
+      background-color: #28a745;
+    }
+    
+    .comparison-item ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .comparison-item li {
+      margin: 5px 0;
+      color: #666;
+    }
+    
+    .mock-detail-header {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .mock-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .mock-title {
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .mock-title::before {
+      content: 'ℹ️';
+      margin-right: 8px;
+    }
+    
+    .mock-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .mock-button {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid;
+    }
+    
+    .mock-button.copy-url {
+      background-color: #e7f3ff;
+      color: #007bff;
+      border-color: #007bff;
+    }
+    
+    .mock-button.replay {
+      background-color: #e8f5e8;
+      color: #28a745;
+      border-color: #28a745;
+    }
+    
+    .mock-button.copy-curl {
+      background-color: #fff3e0;
+      color: #fd7e14;
+      border-color: #fd7e14;
+    }
+    
+    .mock-button.copy-full {
+      background-color: #f8f9fa;
+      color: #6c757d;
+      border-color: #6c757d;
+    }
+    
+    .mock-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>🔄 重放按钮功能展示</h1>
+    
+    <div class="status success">
+      ✅ 功能说明：在请求详情页面的头部区域现在包含四个功能按钮：复制URL、重放请求、复制为curl、复制完整详情
+    </div>
+    
+    <div class="demo-section">
+      <h3>🎯 按钮功能展示：</h3>
+      <div class="button-showcase">
+        <div class="button-card copy-url">
+          <h4>🔗 复制URL</h4>
+          <div class="button-demo copy-url">
+            <span class="icon">🔗</span>
+            复制URL
+          </div>
+          <p><small>快速复制请求的URL地址</small></p>
+          <p><small>适用于：链接分享、导航等</small></p>
+        </div>
+        
+        <div class="button-card replay">
+          <h4>🔄 重放请求</h4>
+          <div class="button-demo replay">
+            <span class="icon">🔄</span>
+            重放请求
+          </div>
+          <p><small>重新发送HTTP请求</small></p>
+          <p><small>适用于：调试、测试、重复操作等</small></p>
+        </div>
+        
+        <div class="button-card copy-curl">
+          <h4>复制为curl</h4>
+          <div class="button-demo copy-curl">
+            <span class="icon"></span>
+            复制为curl
+          </div>
+          <p><small>生成标准的curl命令</small></p>
+          <p><small>适用于：命令行调试、脚本化等</small></p>
+        </div>
+        
+        <div class="button-card copy-full">
+          <h4>📋 复制完整详情</h4>
+          <div class="button-demo copy-full">
+            <span class="icon">📋</span>
+            复制完整详情
+          </div>
+          <p><small>复制请求的所有详细信息</small></p>
+          <p><small>适用于：文档记录、调试分析等</small></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>📱 模拟请求详情头部：</h3>
+      <div class="mock-detail-header">
+        <div class="mock-header-content">
+          <div class="mock-title">请求详情</div>
+          <div class="mock-buttons">
+            <div class="mock-button copy-url">🔗 复制URL</div>
+            <div class="mock-button replay">🔄 重放请求</div>
+            <div class="mock-button copy-curl">复制为curl</div>
+            <div class="mock-button copy-full">📋 复制完整详情</div>
+          </div>
+        </div>
+      </div>
+      <p><small>这是模拟的请求详情页面头部，展示了三个功能按钮的布局和样式</small></p>
+    </div>
+    
+    <div class="demo-section">
+      <h3>📊 功能对比：</h3>
+      <div class="feature-comparison">
+        <div class="comparison-item left">
+          <h5>左侧：复制功能</h5>
+          <ul>
+            <li><strong>复制URL</strong>：快速复制请求地址</li>
+            <li><strong>复制为curl</strong>：生成标准curl命令</li>
+            <li><strong>复制完整详情</strong>：复制所有请求信息</li>
+            <li>操作简单，响应迅速</li>
+            <li>适用于信息获取、命令行调试和分享</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-item right">
+          <h5>右侧：重放功能</h5>
+          <ul>
+            <li><strong>重放请求</strong>：重新执行HTTP请求</li>
+            <li>支持参数修改和自定义</li>
+            <li>功能强大，操作复杂</li>
+            <li>适用于调试和测试</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🔧 使用方法：</h3>
+      <div class="feature-comparison">
+        <div class="comparison-item">
+          <h5>🖱️ 右键菜单</h5>
+          <ul>
+            <li>在日志列表中右键点击请求</li>
+            <li>选择"🔄 重放请求"</li>
+            <li>在弹窗中修改参数</li>
+            <li>点击"重放请求"执行</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-item">
+          <h5>📱 详情页面</h5>
+          <ul>
+            <li>点击任意请求查看详情</li>
+            <li>在头部区域点击"🔄 重放请求"</li>
+            <li>同样弹出重放参数编辑窗口</li>
+            <li>提供两种便捷的重放方式</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>✅ 功能特点：</h3>
+      <ul>
+        <li><strong>双重入口</strong>：右键菜单 + 详情页面，提供多种重放方式</li>
+        <li><strong>视觉一致性</strong>：四个按钮样式统一，颜色区分功能</li>
+        <li><strong>操作便捷</strong>：在查看请求详情时可直接重放，无需返回列表</li>
+        <li><strong>功能完整</strong>：复制、重放和curl生成功能覆盖所有使用场景</li>
+        <li><strong>用户体验</strong>：按钮布局合理，功能一目了然</li>
+      </ul>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🎨 设计亮点：</h3>
+      <div class="feature-comparison">
+        <div class="comparison-item">
+          <h5>🎯 布局设计</h5>
+          <ul>
+            <li>三个按钮并排显示，节省空间</li>
+            <li>使用不同颜色区分功能类型</li>
+            <li>按钮大小适中，易于点击</li>
+            <li>图标 + 文字，直观易懂</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-item">
+          <h5>⚡ 交互体验</h5>
+          <ul>
+            <li>悬停效果，提供视觉反馈</li>
+            <li>点击响应迅速，操作流畅</li>
+            <li>功能分组清晰，逻辑合理</li>
+            <li>支持键盘导航和快捷键</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟按钮点击效果
+    document.querySelectorAll('.mock-button').forEach(button => {
+      button.addEventListener('click', function() {
+        const originalText = this.textContent;
+        const originalBg = this.style.backgroundColor;
+        
+        // 点击效果
+        this.style.transform = 'scale(0.95)';
+        this.style.backgroundColor = '#e9ecef';
+        
+        // 显示功能说明
+        let message = '';
+        if (this.classList.contains('copy-url')) {
+          message = '复制URL功能：快速复制请求地址到剪贴板';
+        } else if (this.classList.contains('replay')) {
+          message = '重放请求功能：打开重放参数编辑窗口';
+        } else if (this.classList.contains('copy-curl')) {
+          message = '复制为curl功能：生成标准curl命令并复制到剪贴板';
+        } else if (this.classList.contains('copy-full')) {
+          message = '复制完整详情功能：复制所有请求信息到剪贴板';
+        }
+        
+        alert(message);
+        
+        // 恢复原状
+        setTimeout(() => {
+          this.style.transform = '';
+          this.style.backgroundColor = originalBg;
+        }, 200);
+      });
+    });
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

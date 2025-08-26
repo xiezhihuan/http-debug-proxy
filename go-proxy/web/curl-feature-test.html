@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>复制为curl功能测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .demo-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .request-example {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+    
+    .request-example h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    
+    .request-example h4::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .request-example.get h4::before { background-color: #28a745; }
+    .request-example.post h4::before { background-color: #007bff; }
+    .request-example.put h4::before { background-color: #fd7e14; }
+    .request-example.delete h4::before { background-color: #dc3545; }
+    
+    .request-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 15px 0;
+    }
+    
+    .detail-item {
+      background-color: white;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 15px;
+    }
+    
+    .detail-item h5 {
+      margin: 0 0 10px 0;
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .detail-content {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #495057;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .curl-output {
+      background-color: #2d3748;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 15px 0;
+      position: relative;
+    }
+    
+    .curl-output::before {
+      content: 'Generated curl command:';
+      display: block;
+      color: #a0aec0;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    
+    .copy-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #4299e1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .copy-button:hover {
+      background-color: #3182ce;
+    }
+    
+    .copy-button:active {
+      transform: scale(0.95);
+    }
+    
+    .test-buttons {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+    
+    .test-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .test-button:hover {
+      background-color: #0056b3;
+      transform: translateY(-1px);
+    }
+    
+    .test-button.get { background-color: #28a745; }
+    .test-button.get:hover { background-color: #218838; }
+    
+    .test-button.post { background-color: #007bff; }
+    .test-button.post:hover { background-color: #0056b3; }
+    
+    .test-button.put { background-color: #fd7e14; }
+    .test-button.put:hover { background-color: #e55a00; }
+    
+    .test-button.delete { background-color: #dc3545; }
+    .test-button.delete:hover { background-color: #c82333; }
+    
+    .feature-highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .feature-card {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .feature-card h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+    
+    .feature-card ul {
+      text-align: left;
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .feature-card li {
+      margin: 8px 0;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>复制为curl功能测试</h1>
+    
+    <div class="status success">
+      ✅ 功能说明：新增"复制为curl"按钮，可以将HTTP请求转换为标准的curl命令格式，方便在命令行中执行
+    </div>
+    
+    <div class="demo-section">
+      <h3>🎯 功能特点：</h3>
+      <div class="feature-highlights">
+        <div class="feature-card">
+          <div class="feature-icon">🔧</div>
+          <h4>智能转换</h4>
+          <ul>
+            <li>自动识别HTTP方法</li>
+            <li>智能处理请求头</li>
+            <li>根据Content-Type选择参数</li>
+            <li>跳过不必要的头部信息</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h4>一键复制</h4>
+          <ul>
+            <li>生成标准curl命令</li>
+            <li>自动复制到剪贴板</li>
+            <li>支持多行格式化</li>
+            <li>便于命令行执行</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h4>格式优化</h4>
+          <ul>
+            <li>JSON数据使用单引号</li>
+            <li>表单数据使用双引号</li>
+            <li>二进制数据使用--data-binary</li>
+            <li>自动换行提高可读性</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🧪 测试不同类型的请求：</h3>
+      
+      <div class="test-buttons">
+        <button class="test-button get" onclick="testRequest('get')">测试 GET 请求</button>
+        <button class="test-button post" onclick="testRequest('post')">测试 POST 请求</button>
+        <button class="test-button put" onclick="testRequest('put')">测试 PUT 请求</button>
+        <button class="test-button delete" onclick="testRequest('delete')">测试 DELETE 请求</button>
+      </div>
+      
+      <div id="requestExamples"></div>
+    </div>
+    
+    <div class="demo-section">
+      <h3>📚 使用场景：</h3>
+      <ul>
+        <li><strong>命令行调试</strong>：在终端中直接执行curl命令测试API</li>
+        <li><strong>脚本自动化</strong>：将curl命令集成到shell脚本中</li>
+        <li><strong>文档记录</strong>：为API文档提供可执行的示例命令</li>
+        <li><strong>团队协作</strong>：分享curl命令给其他开发者</li>
+        <li><strong>CI/CD集成</strong>：在自动化测试中使用curl命令</li>
+        <li><strong>故障排查</strong>：快速重现和调试HTTP请求问题</li>
+      </ul>
+    </div>
+    
+    <div class="demo-section">
+      <h3>🔍 技术实现细节：</h3>
+      <div class="feature-highlights">
+        <div class="feature-card">
+          <h4>请求头处理</h4>
+          <ul>
+            <li>自动跳过 Host 头部</li>
+            <li>跳过 Content-Length 头部</li>
+            <li>跳过 Connection 头部</li>
+            <li>保留所有业务相关头部</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h4>请求体处理</h4>
+          <ul>
+            <li>JSON: 使用 -d 参数</li>
+            <li>表单: 使用 -d 参数</li>
+            <li>二进制: 使用 --data-binary</li>
+            <li>空请求体: 不添加参数</li>
+          </ul>
+        </div>
+        
+        <div class="feature-card">
+          <h4>URL处理</h4>
+          <ul>
+            <li>自动添加双引号包围</li>
+            <li>支持特殊字符转义</li>
+            <li>保持原始URL格式</li>
+            <li>处理查询参数</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟HTTP请求数据
+    const requestExamples = {
+      get: {
+        method: 'GET',
+        url: 'https://api.example.com/users/123',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
+        },
+        body: ''
+      },
+      post: {
+        method: 'POST',
+        url: 'https://api.example.com/users',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          'Accept': 'application/json'
+        },
+        body: '{\n  "name": "John Doe",\n  "email": "john@example.com",\n  "age": 30\n}'
+      },
+      put: {
+        method: 'PUT',
+        url: 'https://api.example.com/users/123',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          'If-Match': 'W/"etag123"'
+        },
+        body: '{\n  "name": "John Smith",\n  "email": "johnsmith@example.com",\n  "age": 31\n}'
+      },
+      delete: {
+        method: 'DELETE',
+        url: 'https://api.example.com/users/123',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          'Accept': 'application/json'
+        },
+        body: ''
+      }
+    };
+    
+    function testRequest(type) {
+      const request = requestExamples[type];
+      const container = document.getElementById('requestExamples');
+      
+      const curlCommand = generateCurlCommand(request);
+      
+      container.innerHTML = `
+        <div class="request-example ${type}">
+          <h4>${request.method} 请求示例</h4>
+          
+          <div class="request-details">
+            <div class="detail-item">
+              <h5>请求信息</h5>
+              <div class="detail-content">方法: ${request.method}
+URL: ${request.url}
+请求头数量: ${Object.keys(request.headers).length}
+请求体长度: ${request.body.length} 字符</div>
+            </div>
+            
+            <div class="detail-item">
+              <h5>请求头</h5>
+              <div class="detail-content">${Object.entries(request.headers).map(([key, value]) => `${key}: ${value}`).join('\n')}</div>
+            </div>
+          </div>
+          
+          ${request.body ? `<div class="detail-item">
+            <h5>请求体</h5>
+            <div class="detail-content">${request.body}</div>
+          </div>` : ''}
+          
+          <div class="curl-output">
+            <button class="copy-button" onclick="copyToClipboard('${curlCommand.replace(/'/g, "\\'")}')">复制</button>
+            ${curlCommand}
+          </div>
+        </div>
+      `;
+    }
+    
+    function generateCurlCommand(request) {
+      let curl = 'curl';
+      
+      // 添加HTTP方法（如果不是GET）
+      if (request.method.toUpperCase() !== 'GET') {
+        curl += ` -X ${request.method.toUpperCase()}`;
+      }
+      
+      // 添加URL
+      curl += ` "${request.url}"`;
+      
+      // 添加请求头
+      Object.entries(request.headers).forEach(([key, value]) => {
+        // 跳过一些不需要的头部
+        if (key.toLowerCase() !== 'host' && 
+            key.toLowerCase() !== 'content-length' &&
+            key.toLowerCase() !== 'connection') {
+          curl += ` \\\n  -H "${key}: ${value}"`;
+        }
+      });
+      
+      // 添加请求体（如果有的话）
+      if (request.body) {
+        const contentType = request.headers['Content-Type'] || '';
+        if (contentType.includes('application/json')) {
+          // JSON数据，使用-d参数
+          curl += ` \\\n  -d '${request.body}'`;
+        } else if (contentType.includes('application/x-www-form-urlencoded')) {
+          // 表单数据，使用-d参数
+          curl += ` \\\n  -d "${request.body}"`;
+        } else {
+          // 其他类型，使用--data-binary参数
+          curl += ` \\\n  --data-binary "${request.body}"`;
+        }
+      }
+      
+      return curl;
+    }
+    
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // 显示复制成功提示
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '已复制!';
+        button.style.backgroundColor = '#28a745';
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.backgroundColor = '#4299e1';
+        }, 2000);
+      }).catch(err => {
+        console.error('复制失败:', err);
+        alert('复制失败，请手动复制');
+      });
+    }
+    
+    // 默认显示GET请求示例
+    testRequest('get');
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

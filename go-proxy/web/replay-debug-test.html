@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>重放请求调试测试</title>
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    
+    .test-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .success { background-color: #d4edda; color: #155724; }
+    .warning { background-color: #fff3cd; color: #856404; }
+    .error { background-color: #f8d7da; color: #721c24; }
+    .info { background-color: #d1ecf1; color: #0c5460; }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+    }
+    
+    .url-tests {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .url-test-card {
+      padding: 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      text-align: center;
+    }
+    
+    .url-test-card.local {
+      border-color: #28a745;
+      background-color: #e8f5e8;
+    }
+    
+    .url-test-card.external {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+    
+    .url-test-card.proxy {
+      border-color: #ffc107;
+      background-color: #fff8e1;
+    }
+    
+    .url-test-card h4 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    
+    .url-display {
+      background-color: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 15px 0;
+      border: 1px solid #dee2e6;
+      word-break: break-all;
+    }
+    
+    .test-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    
+    .test-button:hover {
+      background-color: #0056b3;
+    }
+    
+    .test-button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    .test-button.local {
+      background-color: #28a745;
+    }
+    
+    .test-button.local:hover {
+      background-color: #218838;
+    }
+    
+    .test-button.external {
+      background-color: #007bff;
+    }
+    
+    .test-button.external:hover {
+      background-color: #0056b3;
+    }
+    
+    .test-button.proxy {
+      background-color: #ffc107;
+      color: #333;
+    }
+    
+    .test-button.proxy:hover {
+      background-color: #e0a800;
+    }
+    
+    .log {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #dee2e6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .diagnostic-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .diagnostic-card {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background-color: white;
+    }
+    
+    .diagnostic-card h5 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    
+    .diagnostic-card ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .diagnostic-card li {
+      margin: 5px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🔍 重放请求调试测试</h1>
+    
+    <div class="status info">
+      🛠️ 诊断说明：测试不同类型的URL重放请求，检查地址和端口配置是否正确，分析重放失败的原因
+    </div>
+    
+    <div class="test-section">
+      <h3>🎯 URL 测试集合：</h3>
+      <div class="url-tests">
+        <div class="url-test-card local">
+          <h4>🏠 本地服务器测试</h4>
+          <div class="url-display" id="localUrl">
+            http://localhost:3000/api/test
+          </div>
+          <button class="test-button local" onclick="testUrl('local')">
+            测试本地服务器
+          </button>
+          <p><small>测试本地开发服务器，检查地址和端口是否正确</small></p>
+        </div>
+        
+        <div class="url-test-card local">
+          <h4>🔧 协议自动修复测试</h4>
+          <div class="url-display" id="protocolFixUrl">
+            /api/v1/cashier/desk/order/cart/product/add
+          </div>
+          <button class="test-button local" onclick="testUrl('protocolFix')">
+            测试协议自动修复
+          </button>
+          <p><small>测试没有协议前缀的URL，验证自动修复功能</small></p>
+        </div>
+        
+        <div class="url-test-card external">
+          <h4>🌐 外部 API 测试</h4>
+          <div class="url-display" id="externalUrl">
+            https://httpbin.org/post
+          </div>
+          <button class="test-button external" onclick="testUrl('external')">
+            测试外部API
+          </button>
+          <p><small>测试外部HTTP服务，验证网络连接</small></p>
+        </div>
+        
+        <div class="url-test-card proxy">
+          <h4>🔄 代理服务器测试</h4>
+          <div class="url-display" id="proxyUrl">
+            http://localhost:8091/api/logs
+          </div>
+          <button class="test-button proxy" onclick="testUrl('proxy')">
+            测试代理服务器
+          </button>
+          <p><small>测试代理服务器本身的API接口</small></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔧 诊断信息：</h3>
+      <div class="diagnostic-info">
+        <div class="diagnostic-card">
+          <h5>常见失败原因</h5>
+          <ul>
+            <li>目标服务器未运行</li>
+            <li>端口号配置错误</li>
+            <li>网络连接问题</li>
+            <li>CORS 跨域限制</li>
+            <li>防火墙阻止连接</li>
+            <li>SSL 证书问题</li>
+          </ul>
+        </div>
+        
+        <div class="diagnostic-card">
+          <h5>检查步骤</h5>
+          <ul>
+            <li>确认目标服务器是否启动</li>
+            <li>检查端口号是否正确</li>
+            <li>测试网络连接性</li>
+            <li>查看浏览器开发者工具</li>
+            <li>检查代理服务器日志</li>
+            <li>验证请求参数格式</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📊 测试结果：</h3>
+      <div id="testResults" class="log">等待测试结果...\n\n提示：\n1. 先测试代理服务器本身是否正常\n2. 再测试外部API连接\n3. 最后测试本地服务器\n4. 观察控制台日志了解详细错误信息</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🧪 自定义测试：</h3>
+      <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 16px; align-items: end;">
+        <div>
+          <label for="customUrl" style="display: block; font-weight: 500; margin-bottom: 8px;">自定义URL：</label>
+          <input type="url" id="customUrl" placeholder="输入自定义测试URL" 
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div>
+          <label for="customMethod" style="display: block; font-weight: 500; margin-bottom: 8px;">HTTP方法：</label>
+          <select id="customMethod" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+        <div>
+          <button class="test-button" onclick="testCustomUrl()" style="margin: 0;">
+            测试自定义URL
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function log(message) {
+      const element = document.getElementById('testResults');
+      const timestamp = new Date().toLocaleTimeString();
+      element.innerHTML += `[${timestamp}] ${message}\n`;
+      element.scrollTop = element.scrollHeight;
+    }
+    
+    async function testUrl(type) {
+      let url, method = 'POST';
+      
+      switch (type) {
+        case 'local':
+          url = document.getElementById('localUrl').textContent.trim();
+          break;
+        case 'external':
+          url = document.getElementById('externalUrl').textContent.trim();
+          break;
+        case 'proxy':
+          url = document.getElementById('proxyUrl').textContent.trim();
+          method = 'GET';  // 代理服务器的API接口用GET
+          break;
+        case 'protocolFix':
+          url = document.getElementById('protocolFixUrl').textContent.trim();
+          break;
+      }
+      
+      log(`🔄 开始测试 ${type} URL: ${url}`);
+      
+      try {
+        const requestData = {
+          original_log_id: 'debug-test-' + Date.now(),
+          method: method,
+          url: url,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Debug-Test/1.0'
+          },
+          body: JSON.stringify({
+            test: true,
+            timestamp: new Date().toISOString(),
+            source: 'replay-debug-test'
+          })
+        };
+        
+        log(`📤 发送重放请求参数:`);
+        log(`   方法: ${method}`);
+        log(`   URL: ${url}`);
+        log(`   请求头: ${JSON.stringify(requestData.headers)}`);
+        log(`   请求体大小: ${requestData.body.length} 字符`);
+        
+        const startTime = Date.now();
+        const response = await fetch('/api/replay', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        });
+        
+        const duration = Date.now() - startTime;
+        
+        if (response.ok) {
+          const result = await response.json();
+          log(`✅ ${type} 测试成功！`);
+          log(`   响应状态: ${response.status}`);
+          log(`   耗时: ${duration}ms`);
+          log(`   结果: ${JSON.stringify(result, null, 2)}`);
+          log(`   ---`);
+        } else {
+          const errorText = await response.text();
+          log(`❌ ${type} 测试失败！`);
+          log(`   HTTP状态: ${response.status}`);
+          log(`   错误信息: ${errorText}`);
+          log(`   耗时: ${duration}ms`);
+          log(`   ---`);
+        }
+        
+      } catch (error) {
+        log(`💥 ${type} 测试异常！`);
+        log(`   错误: ${error.message}`);
+        log(`   类型: ${error.constructor.name}`);
+        log(`   ---`);
+      }
+    }
+    
+    async function testCustomUrl() {
+      const url = document.getElementById('customUrl').value.trim();
+      const method = document.getElementById('customMethod').value;
+      
+      if (!url) {
+        log('❌ 请输入自定义URL');
+        return;
+      }
+      
+      log(`🔄 开始测试自定义 URL: ${url}`);
+      
+      try {
+        const requestData = {
+          original_log_id: 'custom-test-' + Date.now(),
+          method: method,
+          url: url,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Custom-Debug-Test/1.0'
+          },
+          body: JSON.stringify({
+            test: true,
+            timestamp: new Date().toISOString(),
+            source: 'custom-test'
+          })
+        };
+        
+        log(`📤 发送自定义重放请求:`);
+        log(`   方法: ${method}`);
+        log(`   URL: ${url}`);
+        
+        const startTime = Date.now();
+        const response = await fetch('/api/replay', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        });
+        
+        const duration = Date.now() - startTime;
+        
+        if (response.ok) {
+          const result = await response.json();
+          log(`✅ 自定义URL测试成功！`);
+          log(`   响应状态: ${response.status}`);
+          log(`   耗时: ${duration}ms`);
+          log(`   结果: ${JSON.stringify(result, null, 2)}`);
+          log(`   ---`);
+        } else {
+          const errorText = await response.text();
+          log(`❌ 自定义URL测试失败！`);
+          log(`   HTTP状态: ${response.status}`);
+          log(`   错误信息: ${errorText}`);
+          log(`   耗时: ${duration}ms`);
+          log(`   ---`);
+        }
+        
+      } catch (error) {
+        log(`💥 自定义URL测试异常！`);
+        log(`   错误: ${error.message}`);
+        log(`   类型: ${error.constructor.name}`);
+        log(`   ---`);
+      }
+    }
+    
+    // 页面加载完成后初始化
+    window.addEventListener('load', function() {
+      log('📄 重放请求调试测试页面已加载');
+      log('🔧 请选择测试类型开始诊断重放请求问题');
+      log('💡 建议先测试代理服务器本身，再测试外部连接');
+      log('---');
+    });
+    
+    // 禁用浏览器默认右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  </script>
+</body>
+</html>

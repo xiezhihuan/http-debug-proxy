@@ -932,7 +932,7 @@ class _LogDetailState extends State<LogDetail> with SingleTickerProviderStateMix
   void _replayRequest(BuildContext context) {
     if (widget.log == null) return;
 
-    // 显示重放请求对话框
+    // 显示重放请求对话框（保持原有的编辑功能）
     showDialog(
       context: context,
       builder: (context) => ReplayDialog(

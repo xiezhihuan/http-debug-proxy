@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/http_log.dart';
-import 'replay_dialog.dart';
 import 'request_sequence_dialog.dart';
+import '../services/http_service.dart';
 
 class LogList extends StatefulWidget {
   final List<HttpLog> logs;
@@ -328,13 +328,7 @@ class LogTile extends StatelessWidget {
           onTap: () {
             // 延迟执行，避免菜单关闭动画冲突
             Future.delayed(Duration(milliseconds: 100), () {
-              showDialog(
-                context: context,
-                builder: (context) => ReplayDialog(
-                  originalLog: log,
-                  allHttpLogs: allLogs,
-                ),
-              );
+              _directReplayRequest(context, log);
             });
           },
         ),
@@ -447,4 +441,91 @@ class LogTile extends StatelessWidget {
       ),
     );
   }
+
+  // 直接重放请求功能
+  Future<void> _directReplayRequest(BuildContext context, HttpLog log) async {
+    final httpService = HttpService();
+    
+    // 显示加载提示
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(width: 12),
+            Text('正在重放请求...'),
+          ],
+        ),
+        backgroundColor: Colors.blue,
+        duration: Duration(seconds: 30), // 较长时间，等待请求完成
+      ),
+    );
+
+    try {
+      // 使用原始请求的所有参数
+      final headers = <String, String>{};
+      log.requestHeaders.forEach((key, values) {
+        if (values.isNotEmpty) {
+          headers[key] = values.join(', ');
+        }
+      });
+
+      final result = await httpService.replayRequest(
+        originalLogId: log.id,
+        method: log.method,
+        url: log.url,
+        headers: headers,
+        body: log.requestBody,
+      );
+
+      // 隐藏加载提示
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      
+      // 显示成功提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text('重放请求成功! 日志ID: ${result['log_id'] ?? '未知'}'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      
+    } catch (e) {
+      // 隐藏加载提示
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      
+      // 显示失败提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text('重放请求失败: ${e.toString()}'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
 } 
