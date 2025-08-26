@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../models/http_log.dart';
 import '../services/http_service.dart';
 
@@ -36,7 +37,19 @@ class _ReplayDialogState extends State<ReplayDialog> {
     super.initState();
     _urlController = TextEditingController(text: widget.originalLog.url);
     _methodController = TextEditingController(text: widget.originalLog.method);
-    _bodyController = TextEditingController(text: widget.originalLog.requestBody);
+    
+    // 初始化请求体，如果是JSON则格式化显示
+    String initialBody = widget.originalLog.requestBody;
+    if (initialBody.isNotEmpty && _isInitialJsonContent()) {
+      try {
+        final jsonObject = jsonDecode(initialBody);
+        const encoder = JsonEncoder.withIndent('    '); // 4个空格
+        initialBody = encoder.convert(jsonObject);
+      } catch (e) {
+        // 如果JSON解析失败，保持原始内容
+      }
+    }
+    _bodyController = TextEditingController(text: initialBody);
     _replayCountController = TextEditingController(text: '1');
     
     // 初始化请求头控制器
@@ -400,7 +413,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 请求体类型指示器
+          // 请求体类型指示器和JSON操作按钮
           Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -414,13 +427,41 @@ class _ReplayDialogState extends State<ReplayDialog> {
               children: [
                 Icon(Icons.info_outline, color: Colors.blue.shade700, size: 16),
                 const SizedBox(width: 8),
-                Text(
-                  '请求体类型: ${_getContentTypeFromHeaders()}',
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    '请求体类型: ${_getContentTypeFromHeaders()}',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+                // JSON格式化按钮
+                if (_isJsonContentType()) ...[
+                  TextButton.icon(
+                    onPressed: _formatJson,
+                    icon: Icon(Icons.auto_fix_high, size: 16, color: Colors.green.shade700),
+                    label: Text(
+                      '格式化JSON',
+                      style: TextStyle(fontSize: 12, color: Colors.green.shade700),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: _compressJson,
+                    icon: Icon(Icons.compress, size: 16, color: Colors.orange.shade700),
+                    label: Text(
+                      '压缩JSON',
+                      style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -434,7 +475,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
               maxLines: null,
               expands: true,
               decoration: InputDecoration(
-                hintText: '输入请求体内容...\n\n示例 JSON:\n{\n  "key": "value",\n  "number": 123,\n  "boolean": true\n}',
+                hintText: '输入请求体内容...\n\n示例 JSON:\n{\n    "key": "value",\n    "number": 123,\n    "boolean": true\n}',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -594,6 +635,115 @@ class _ReplayDialogState extends State<ReplayDialog> {
     setState(() {
       _headerControllers.remove(key)?.dispose();
     });
+  }
+
+  // 检查是否为JSON内容类型
+  bool _isJsonContentType() {
+    final contentType = _getContentTypeFromHeaders().toLowerCase();
+    return contentType.contains('json');
+  }
+
+  // 检查初始请求是否为JSON类型（用于初始化时判断）
+  bool _isInitialJsonContent() {
+    // 检查原始请求的Content-Type
+    final headers = widget.originalLog.requestHeaders;
+    final contentTypeValues = headers['Content-Type'] ?? headers['content-type'];
+    if (contentTypeValues != null && contentTypeValues.isNotEmpty) {
+      final contentType = contentTypeValues.first.toLowerCase();
+      return contentType.contains('json');
+    }
+    
+    // 如果没有Content-Type头，尝试通过内容判断
+    final body = widget.originalLog.requestBody.trim();
+    if (body.isNotEmpty) {
+      return (body.startsWith('{') && body.endsWith('}')) || 
+             (body.startsWith('[') && body.endsWith(']'));
+    }
+    
+    return false;
+  }
+
+  // 格式化JSON（使用4个空格缩进）
+  void _formatJson() {
+    try {
+      final jsonText = _bodyController.text.trim();
+      if (jsonText.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('请求体为空，无法格式化'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // 尝试解析JSON
+      final jsonObject = jsonDecode(jsonText);
+      
+      // 使用4个空格进行格式化
+      const encoder = JsonEncoder.withIndent('    '); // 4个空格
+      final formattedJson = encoder.convert(jsonObject);
+      
+      setState(() {
+        _bodyController.text = formattedJson;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('JSON格式化成功'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      // JSON无效时不进行格式化，显示提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('JSON格式无效，无法格式化'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 压缩JSON（去除格式化，变成一行）
+  void _compressJson() {
+    try {
+      final jsonText = _bodyController.text.trim();
+      if (jsonText.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('请求体为空，无法压缩'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // 尝试解析JSON
+      final jsonObject = jsonDecode(jsonText);
+      
+      // 压缩为一行（不使用缩进）
+      final compressedJson = jsonEncode(jsonObject);
+      
+      setState(() {
+        _bodyController.text = compressedJson;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('JSON压缩成功'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      // JSON无效时不进行压缩，显示提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('JSON格式无效，无法压缩'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _replayRequest() async {
