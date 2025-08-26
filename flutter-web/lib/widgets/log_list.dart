@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../models/http_log.dart';
 import 'request_sequence_dialog.dart';
 import '../services/http_service.dart';
+import 'add_favorite_dialog.dart';
+import '../services/favorites_service.dart';
 
 class LogList extends StatefulWidget {
   final List<HttpLog> logs;
@@ -12,6 +14,7 @@ class LogList extends StatefulWidget {
   final VoidCallback onToggleListening;
   final VoidCallback onClearLogs; // 添加清除日志回调
   final HttpLog? selectedLog; // 添加选中日志参数
+  final VoidCallback? onFavoriteAdded; // 添加收藏后回调
 
   const LogList({
     Key? key,
@@ -21,6 +24,7 @@ class LogList extends StatefulWidget {
     required this.onToggleListening,
     required this.onClearLogs, // 添加清除日志回调
     required this.selectedLog, // 添加选中日志参数
+    this.onFavoriteAdded, // 添加收藏后回调
   }) : super(key: key);
 
   @override
@@ -227,6 +231,7 @@ class _LogListState extends State<LogList> {
                         allLogs: widget.logs,
                         onTap: () => widget.onLogSelected(log),
                         isSelected: widget.selectedLog?.id == log.id, // 通过ID比较判断是否选中
+                        onFavoriteAdded: widget.onFavoriteAdded,
                       );
                     },
                   ),
@@ -242,6 +247,7 @@ class LogTile extends StatelessWidget {
   final List<HttpLog> allLogs;
   final VoidCallback onTap;
   final bool isSelected;
+  final VoidCallback? onFavoriteAdded;
 
   const LogTile({
     Key? key,
@@ -249,6 +255,7 @@ class LogTile extends StatelessWidget {
     required this.allLogs,
     required this.onTap,
     required this.isSelected,
+    this.onFavoriteAdded,
   }) : super(key: key);
 
   @override
@@ -353,6 +360,19 @@ class LogTile extends StatelessWidget {
         ),
         PopupMenuItem(
           child: ListTile(
+            leading: Icon(Icons.star, color: Colors.amber),
+            title: Text('收藏请求'),
+            contentPadding: EdgeInsets.zero,
+          ),
+          onTap: () {
+            // 延迟执行，避免菜单关闭动画冲突
+            Future.delayed(Duration(milliseconds: 100), () {
+              _showAddFavoriteDialog(context, log);
+            });
+          },
+        ),
+        PopupMenuItem(
+          child: ListTile(
             leading: Icon(Icons.copy, color: Colors.green),
             title: Text('复制URL'),
             contentPadding: EdgeInsets.zero,
@@ -363,6 +383,37 @@ class LogTile extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _showAddFavoriteDialog(BuildContext context, HttpLog log) {
+    final favoritesService = FavoritesService();
+    
+    // 检查是否已收藏
+    if (favoritesService.isFavorited(favoritesService.generateId(log))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.info, color: Colors.white),
+              SizedBox(width: 8),
+              Text('该请求已在收藏列表中'),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AddFavoriteDialog(httpLog: log),
+    ).then((result) {
+      if (result == true) {
+        // 收藏成功，刷新收藏列表
+        onFavoriteAdded?.call();
+      }
+    });
   }
 
   void _copyRequestToClipboard(BuildContext context) {

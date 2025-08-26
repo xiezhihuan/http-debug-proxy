@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1457f861-ef87-4439-879d-80f6a23ca75a" name="更改" comment="fix: bar宽度扩大">
-      <change beforePath="$PROJECT_DIR$/flutter-web/lib/widgets/replay_dialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/flutter-web/lib/widgets/replay_dialog.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/flutter-web/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/flutter-web/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/flutter-web/lib/widgets/log_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/flutter-web/lib/widgets/log_list.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go-proxy/web/assets/fonts/MaterialIcons-Regular.otf" beforeDir="false" afterPath="$PROJECT_DIR$/go-proxy/web/assets/fonts/MaterialIcons-Regular.otf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go-proxy/web/flutter_bootstrap.js" beforeDir="false" afterPath="$PROJECT_DIR$/go-proxy/web/flutter_bootstrap.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go-proxy/web/flutter_service_worker.js" beforeDir="false" afterPath="$PROJECT_DIR$/go-proxy/web/flutter_service_worker.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go-proxy/web/main.dart.js" beforeDir="false" afterPath="$PROJECT_DIR$/go-proxy/web/main.dart.js" afterDir="false" />

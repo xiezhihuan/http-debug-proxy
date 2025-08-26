@@ -6,6 +6,7 @@ import 'services/http_service.dart';
 import 'widgets/log_list.dart';
 import 'widgets/log_detail.dart';
 import 'widgets/filter_bar.dart';
+import 'widgets/favorites_sidebar.dart';
 
 void main() {
   runApp(MyApp());
@@ -46,6 +47,7 @@ class _MainScreenState extends State<MainScreen> {
   bool _isListening = true; // 监听状态
   
   StreamSubscription<HttpLog>? _logSubscription;
+  VoidCallback? _favoritesSidebarRefresh;
 
   @override
   void initState() {
@@ -188,6 +190,11 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  // 刷新收藏列表
+  void _refreshFavorites() {
+    _favoritesSidebarRefresh?.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -222,7 +229,18 @@ class _MainScreenState extends State<MainScreen> {
           padding: EdgeInsets.all(16),
           child: Row(
             children: [
-              // 左侧：过滤栏 + 日志列表（上下结构）
+              // 最左侧：收藏侧边栏
+              FavoritesSidebar(
+                onFavoritesChanged: () {
+                  // 收藏变化时的回调，可以在这里刷新相关状态
+                },
+                onRefreshCallback: (callback) {
+                  // 保存刷新回调
+                  _favoritesSidebarRefresh = callback;
+                },
+              ),
+              
+              // 中间：过滤栏 + 日志列表（上下结构）
               Expanded(
                 flex: 1,
                 child: Column(
@@ -244,6 +262,7 @@ class _MainScreenState extends State<MainScreen> {
                         onToggleListening: _toggleListening,
                         onClearLogs: _onClearLogs,
                         selectedLog: _selectedLog,
+                        onFavoriteAdded: _refreshFavorites,
                       ),
                     ),
                   ],
