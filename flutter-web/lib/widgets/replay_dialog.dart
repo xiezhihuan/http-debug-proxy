@@ -22,6 +22,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
   late TextEditingController _methodController;
   late TextEditingController _bodyController;
   late TextEditingController _replayCountController;
+  late TextEditingController _newHeaderNameController;
   late Map<String, TextEditingController> _headerControllers;
   
   final HttpService _httpService = HttpService();
@@ -37,7 +38,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
     super.initState();
     _urlController = TextEditingController(text: widget.originalLog.url);
     _methodController = TextEditingController(text: widget.originalLog.method);
-    
+
     // 初始化请求体，如果是JSON则格式化显示
     String initialBody = widget.originalLog.requestBody;
     if (initialBody.isNotEmpty && _isInitialJsonContent()) {
@@ -51,6 +52,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
     }
     _bodyController = TextEditingController(text: initialBody);
     _replayCountController = TextEditingController(text: '1');
+    _newHeaderNameController = TextEditingController();
     
     // 初始化请求头控制器
     _headerControllers = {};
@@ -65,6 +67,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
     _methodController.dispose();
     _bodyController.dispose();
     _replayCountController.dispose();
+    _newHeaderNameController.dispose();
     _headerControllers.values.forEach((controller) => controller.dispose());
     super.dispose();
   }
@@ -334,6 +337,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _newHeaderNameController,
                     decoration: InputDecoration(
                       hintText: '请求头名称',
                       border: OutlineInputBorder(
@@ -345,6 +349,7 @@ class _ReplayDialogState extends State<ReplayDialog> {
                       if (value.isNotEmpty && !_headerControllers.containsKey(value)) {
                         setState(() {
                           _headerControllers[value] = TextEditingController();
+                          _newHeaderNameController.clear();
                         });
                       }
                     },
@@ -660,10 +665,29 @@ class _ReplayDialogState extends State<ReplayDialog> {
   }
 
   void _addNewHeader() {
-    final newKey = 'New-Header-${_headerControllers.length + 1}';
-    setState(() {
-      _headerControllers[newKey] = TextEditingController();
-    });
+    final headerName = _newHeaderNameController.text.trim();
+    if (headerName.isNotEmpty && !_headerControllers.containsKey(headerName)) {
+      setState(() {
+        _headerControllers[headerName] = TextEditingController();
+        _newHeaderNameController.clear();
+      });
+    } else if (headerName.isEmpty) {
+      // 如果输入框为空，显示提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('请输入请求头名称'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else {
+      // 如果请求头已存在，显示提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('请求头 "$headerName" 已存在'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
   }
 
   void _removeHeader(String key) {
