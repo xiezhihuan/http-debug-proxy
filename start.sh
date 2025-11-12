@@ -4,12 +4,14 @@
 echo "🚀 启动HTTP调试代理服务..."
 
 # 检查参数
-TARGET_URL=${1:-"http://localhost:8081"}
+# TARGET_URL 支持多个URL，用逗号分隔，例如: "http://localhost:8081,http://localhost:8082"
+TARGET_URL=${1:-"http://localhost:8081,http://localhost:8082"}
 PROXY_PORT=${2:-"8080"}
 WEB_PORT=${3:-"8091"}
 
 echo "📋 配置信息:"
 echo "   目标API服务: $TARGET_URL"
+echo "   (支持多个URL，用逗号分隔，自动故障转移)"
 echo "   代理端口:   $PROXY_PORT"
 echo "   Web界面:    http://localhost:$WEB_PORT"
 echo ""
@@ -31,7 +33,12 @@ echo "✅ 启动代理服务..."
 echo "💡 使用说明："
 echo "   1. 配置Android应用使用代理: localhost:$PROXY_PORT"
 echo "   2. 打开浏览器访问: http://localhost:$WEB_PORT"
-echo "   3. 按 Ctrl+C 停止服务"
+echo "   3. 故障转移: 当第一个URL不可用时，自动切换到下一个"
+echo "   4. 自动恢复: 当第一个URL恢复时，自动切换回第一个"
+echo "   5. 按 Ctrl+C 停止服务"
+echo ""
+echo "💡 多URL示例："
+echo "   ./start.sh \"http://localhost:8081,http://localhost:8082,http://api.example.com\""
 echo ""
 
 # 启动服务

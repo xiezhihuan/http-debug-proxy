@@ -28,7 +28,7 @@ class _FavoritesSidebarState extends State<FavoritesSidebar> {
   List<String> _tags = [];
   String? _selectedTag;
   bool _isLoading = false;
-  bool _isCollapsed = false;
+  bool _isCollapsed = true; // 默认折叠
 
   @override
   void initState() {

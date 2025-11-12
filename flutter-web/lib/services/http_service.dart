@@ -1,9 +1,32 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:html' as html;
 import '../models/http_log.dart';
 
 class HttpService {
-  String _baseUrl = 'http://localhost:8091';
+  String? _baseUrl;
+
+  /// 根据当前页面URL动态构建API基础地址
+  String _getBaseUrl() {
+    if (_baseUrl != null) {
+      return _baseUrl!;
+    }
+
+    try {
+      final location = html.window.location;
+      final protocol = location.protocol;
+      final host = location.host; // host已经包含端口号
+      
+      // 构建API基础URL
+      final apiUrl = '$protocol//$host';
+      print('动态构建API地址: $apiUrl (来源: ${location.href})');
+      return apiUrl;
+    } catch (e) {
+      print('构建API地址失败，使用默认地址: $e');
+      // 如果无法获取当前页面URL，使用默认值
+      return 'http://localhost:8091';
+    }
+  }
 
   void setBaseUrl(String url) {
     _baseUrl = url;
@@ -20,7 +43,7 @@ class HttpService {
       if (method != null && method.isNotEmpty) queryParams['method'] = method;
       if (statusCode != null) queryParams['status_code'] = statusCode.toString();
 
-      final uri = Uri.parse('$_baseUrl/api/logs').replace(queryParameters: queryParams);
+      final uri = Uri.parse('${_getBaseUrl()}/api/logs').replace(queryParameters: queryParams);
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -37,7 +60,10 @@ class HttpService {
 
   Future<bool> clearLogs() async {
     try {
-      final response = await http.post(Uri.parse('$_baseUrl/api/logs/clear'));
+      final url = '${_getBaseUrl()}/api/logs/clear';
+      print('清除日志请求URL: $url');
+      final response = await http.post(Uri.parse(url));
+      print('清除日志响应: ${response.statusCode} - ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
       print('清除日志错误: $e');
@@ -47,7 +73,7 @@ class HttpService {
 
   Future<bool> startListening() async {
     try {
-      final response = await http.post(Uri.parse('$_baseUrl/api/listening/start'));
+      final response = await http.post(Uri.parse('${_getBaseUrl()}/api/listening/start'));
       return response.statusCode == 200;
     } catch (e) {
       print('开始监听错误: $e');
@@ -57,7 +83,7 @@ class HttpService {
 
   Future<bool> stopListening() async {
     try {
-      final response = await http.post(Uri.parse('$_baseUrl/api/listening/stop'));
+      final response = await http.post(Uri.parse('${_getBaseUrl()}/api/listening/stop'));
       return response.statusCode == 200;
     } catch (e) {
       print('停止监听错误: $e');
@@ -67,7 +93,7 @@ class HttpService {
 
   Future<bool> getListeningStatus() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/api/listening/status'));
+      final response = await http.get(Uri.parse('${_getBaseUrl()}/api/listening/status'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['listening'] ?? false;
@@ -96,7 +122,7 @@ class HttpService {
       };
 
       final response = await http.post(
-        Uri.parse('$_baseUrl/api/replay'),
+        Uri.parse('${_getBaseUrl()}/api/replay'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestData),
       );

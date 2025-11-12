@@ -33,7 +33,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final WebSocketService _wsService = WebSocketService();
+  late final WebSocketService _wsService;
   final HttpService _httpService = HttpService();
   
   List<HttpLog> _allLogs = [];
@@ -56,22 +56,40 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _initializeServices() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    print('🔧 [${timestamp}] 开始初始化服务...');
+    
+    // 获取单例实例
+    _wsService = WebSocketService.instance;
+    print('📱 [${timestamp}] WebSocketService单例获取成功');
+    
+    // 取消旧的订阅（如果存在）
+    if (_logSubscription != null) {
+      print('🔄 [${timestamp}] 取消旧的日志订阅');
+      _logSubscription?.cancel();
+    }
+    
     // 连接WebSocket
+    print('🔗 [${timestamp}] 开始连接WebSocket...');
     _wsService.connect();
     
     // 监听新日志
     _logSubscription = _wsService.logStream.listen((log) {
+      print('📥 [${DateTime.now().millisecondsSinceEpoch}] 主界面收到新日志: ${log.id} - ${log.method} ${log.url}');
       setState(() {
         _allLogs.add(log);
         _applyFilters();
       });
     });
+    print('👂 [${timestamp}] 日志流监听已设置');
     
     // 加载历史日志
     _loadHistoryLogs();
     
     // 获取当前监听状态
     _loadListeningStatus();
+    
+    print('✅ [${timestamp}] 服务初始化完成');
   }
 
   Future<void> _loadHistoryLogs() async {
@@ -328,6 +346,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    print('主界面销毁，清理资源...');
     _logSubscription?.cancel();
     _wsService.dispose();
     super.dispose();
