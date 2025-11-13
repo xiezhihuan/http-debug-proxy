@@ -116,6 +116,10 @@ docker run -d \
 ```bash
 # 构建Docker镜像
 docker build -t http-debug-proxy .
+# 多架构构建
+docker buildx create --use --name mybuilder
+docker buildx inspect --bootstrap
+docker buildx build --platform linux/amd64,linux/arm64 -t 602666178/http-proxy-debug-view . --push
 
 # 运行自定义镜像
 docker run -d \
